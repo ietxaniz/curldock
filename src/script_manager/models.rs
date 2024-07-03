@@ -14,3 +14,12 @@ pub struct ScriptList {
     pub path: String,
     pub scripts: Vec<ScriptInfo>,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ScriptDetails {
+    pub name: String,
+    pub path: String,
+    pub content: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
