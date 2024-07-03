@@ -27,7 +27,7 @@ All API endpoints are prefixed with `/api/v1`
     }
     ```
 
-- POST /scripts
+- POST /script
   - Create a new curl script in the specified path (or root if no path is provided)
   - Body: 
     ```json
@@ -50,10 +50,28 @@ All API endpoints are prefixed with `/api/v1`
     ```
   - Returns: { "name": string, "created_at": timestamp }
 
-- PUT /scripts/{path}/{name}
-  - Update an existing script
-  - Body: { "content": string }
-  - Returns: { "name": string, "content": string, "updated_at": timestamp }
+- POST /script
+  - Create a new curl script in the specified path (or root if no path is provided)
+  - Body: 
+    ```json
+    {
+      "name": "string",
+      "path": "string",
+      "curl_command": {
+        "method": "string",
+        "url": "string",
+        "headers": [
+          ["string", "string"]
+        ],
+        "data": "string or null",
+        "options": {
+          "verbose": "boolean",
+          "insecure": "boolean"
+        }
+      }
+    }
+    ```
+  - Returns: { "name": string, "created_at": timestamp }
 
 - DELETE /scripts/{path}/{name}
   - Delete a script

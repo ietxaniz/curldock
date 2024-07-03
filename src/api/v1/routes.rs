@@ -31,7 +31,14 @@ pub async fn handle_request(
             };
             handlers::create_script::create_script(web::Json(script_details)).await
         },
-        // Add other v1 routes here as you develop them
+        ("/v1/script", &Method::PUT) => {
+          let script_details: ScriptDetailsCreate = match serde_json::from_slice(&body) {
+              Ok(data) => data,
+              Err(_) => return HttpResponse::BadRequest().body("Invalid JSON"),
+          };
+          handlers::update_script::update_script(web::Json(script_details)).await
+      },
+      // Add other v1 routes here as you develop them
         _ => not_found::not_found().await,
     }
 }
