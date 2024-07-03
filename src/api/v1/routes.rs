@@ -24,7 +24,16 @@ pub async fn handle_request(
                 _ => not_found::not_found().await
             }
         },
-        ("/v1/script", &Method::POST) => {
+        (p, &Method::POST) if p.starts_with("/v1/execute") => {
+          let remaining_path = p.trim_start_matches("/v1/execute").trim_start_matches('/');
+          let parts: Vec<&str> = remaining_path.splitn(2, '/').collect();
+          match parts.len() {
+              1 => handlers::execute_script::execute_script(web::Path::from(("".to_string(), parts[0].to_string()))).await,
+              2 => handlers::execute_script::execute_script(web::Path::from((parts[0].to_string(), parts[1].to_string()))).await,
+              _ => not_found::not_found().await
+          }
+      },
+      ("/v1/script", &Method::POST) => {
             let script_details: ScriptDetailsCreate = match serde_json::from_slice(&body) {
                 Ok(data) => data,
                 Err(_) => return HttpResponse::BadRequest().body("Invalid JSON"),

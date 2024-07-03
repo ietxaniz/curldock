@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize};
 use thiserror::Error;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CurlCommand {
@@ -36,4 +37,13 @@ pub enum ParseError {
     #[error("No curl command found in script")]
     MissingCurlCommand,
     // Add other error types as needed
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CurlCommandResult {
+    pub request: CurlCommand,
+    pub response_headers: HashMap<String, String>,
+    pub status_code: u16,
+    pub date: String,
+    pub body: String,
 }
