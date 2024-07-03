@@ -4,6 +4,7 @@ mod api;
 mod revproxy;
 mod config;
 mod script_manager;
+mod curl_gateway;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
