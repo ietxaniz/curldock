@@ -1,10 +1,13 @@
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use awc::Client;
-use crate::config::Config;
+use crate::config;
 
-pub async fn handle_dev_proxy(req: HttpRequest, body: web::Bytes, config: web::Data<Config>) -> impl Responder {
+pub async fn handle_dev_proxy(req: HttpRequest, body: web::Bytes) -> impl Responder {
     let client = Client::default();
     let path = req.uri().to_string();
+    
+    // Use the singleton config to get the dev server URL
+    let config = config::get_config();
     let forward_url = format!("{}{}", config.dev_server_url(), path);
 
     match client.request_from(forward_url, req.head()).send_body(body).await {

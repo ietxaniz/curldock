@@ -1,29 +1,30 @@
-use actix_web::{App, HttpServer, web};
+use actix_web::{App, HttpServer};
 
 mod api;
 mod revproxy;
 mod config;
-
-use config::Config;
+mod script_manager;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let config = Config::from_env().expect("Server configuration");
-    let config = web::Data::new(config);
+    config::initialize_config();
+    script_manager::initialize_script_manager();
+
+    let config = config::get_config();
 
     println!("Starting server in {} mode", if config.is_development() { "DEVELOPMENT" } else { "PRODUCTION" });
     println!("Development frontend port: {}", config.devfrontport);
 
-    HttpServer::new(move || {
-        let app = App::new().app_data(config.clone());
+    HttpServer::new(|| {
+        let app = App::new();
 
-        if config.is_development() {
+        if config::get_config().is_development() {
             app.configure(revproxy::routes::dev_config)
         } else {
             app.configure(revproxy::routes::prod_config)
         }
     })
-    .bind(("127.0.0.1", 2080))?
+    .bind(("127.0.0.1", config.port))?
     .run()
     .await
 }

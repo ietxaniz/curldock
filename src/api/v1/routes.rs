@@ -10,6 +10,7 @@ pub async fn handle_request(
 ) -> HttpResponse {
     match (path, method) {
         ("/v1/hello", &Method::GET) => handlers::hello::hello().await,
+        ("/v1/scripts", &Method::GET) => handlers::scripts::list_scripts().await,
         // Add other v1 routes here as you develop them
         _ => not_found::not_found().await,
     }

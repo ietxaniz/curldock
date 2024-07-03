@@ -1,5 +1,4 @@
 use actix_web::{HttpRequest, HttpResponse, http::Method, web};
-use crate::config::Config;
 use super::handlers::hello;
 use super::common::handlers::not_found;
 use super::v1;
@@ -9,7 +8,6 @@ pub async fn handle_request(
     method: &Method,
     req: HttpRequest,
     body: web::Bytes,
-    _config: web::Data<Config>
 ) -> HttpResponse {
     // Remove the leading "/api" from the path
     let api_path = path.trim_start_matches("/api");

@@ -22,7 +22,7 @@ All API endpoints are prefixed with `/api/v1`
     - per_page: int (default 20)
     - sort: string (e.g., "name", "-created_at")
     - filter: string (e.g., "name:contains:test")
-  - Returns: { "total": int, "page": int, "per_page": int, "scripts": [{ "id": string, "name": string, "created_at": timestamp, "last_executed": timestamp, "execution_count": int }] }
+  - Returns: { "total": int, "page": int, "per_page": int, "scripts": [{ "file_name": string, "created_at": timestamp, "updated_at": timestamp }] }
 
 - GET /scripts/{id}
   - Get details of a specific script
