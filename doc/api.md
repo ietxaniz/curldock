@@ -27,10 +27,28 @@ All API endpoints are prefixed with `/api/v1`
     }
     ```
 
-- POST /scripts[/{path}]
+- POST /scripts
   - Create a new curl script in the specified path (or root if no path is provided)
-  - Body: { "name": string, "content": string }
-  - Returns: { "name": string, "content": string, "created_at": timestamp }
+  - Body: 
+    ```json
+    {
+      "name": "string",
+      "path": "string",
+      "curl_command": {
+        "method": "string",
+        "url": "string",
+        "headers": [
+          ["string", "string"]
+        ],
+        "data": "string or null",
+        "options": {
+          "verbose": "boolean",
+          "insecure": "boolean"
+        }
+      }
+    }
+    ```
+  - Returns: { "name": string, "created_at": timestamp }
 
 - PUT /scripts/{path}/{name}
   - Update an existing script
@@ -44,9 +62,29 @@ All API endpoints are prefixed with `/api/v1`
 
 ### Script-details
 
-- GET /script-details/{path}/{name}
+- **GET** `/script-details/{path}/{name}`
   - Get all information of a script
-  - Returns: { "name": string, "path": string, "content": string, "created_at": timestamp, "updated_at": timestamp }
+  - Returns:
+    ```json
+    {
+      "name": "string",
+      "path": "string",
+      "curl_command": {
+        "method": "string",
+        "url": "string",
+        "headers": [
+          ["string", "string"]
+        ],
+        "data": "string or null",
+        "options": {
+          "verbose": "boolean",
+          "insecure": "boolean"
+        }
+      },
+      "created_at": "timestamp",
+      "updated_at": "timestamp"
+    }
+    ```
 
 ### Execute
 

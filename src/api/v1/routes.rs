@@ -1,12 +1,13 @@
 use actix_web::{HttpRequest, HttpResponse, http::Method, web};
 use super::handlers;
 use crate::api::common::handlers::not_found;
+use crate::script_manager::models::ScriptDetailsCreate;
 
 pub async fn handle_request(
     path: &str,
     method: &Method,
     _req: &HttpRequest,
-    _body: web::Bytes
+    body: web::Bytes
 ) -> HttpResponse {
     match (path, method) {
         ("/v1/hello", &Method::GET) => handlers::hello::hello().await,
@@ -22,6 +23,13 @@ pub async fn handle_request(
                 2 => handlers::script_details::get_script_details(web::Path::from((parts[0].to_string(), parts[1].to_string()))).await,
                 _ => not_found::not_found().await
             }
+        },
+        ("/v1/script", &Method::POST) => {
+            let script_details: ScriptDetailsCreate = match serde_json::from_slice(&body) {
+                Ok(data) => data,
+                Err(_) => return HttpResponse::BadRequest().body("Invalid JSON"),
+            };
+            handlers::create_script::create_script(web::Json(script_details)).await
         },
         // Add other v1 routes here as you develop them
         _ => not_found::not_found().await,

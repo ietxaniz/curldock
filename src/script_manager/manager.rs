@@ -1,10 +1,11 @@
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 #[derive(Debug)]
 pub struct ScriptManager {
     scripts_dir: PathBuf,
-    #[allow(dead_code)] // TODO: This attribute suppreses the warning, but should be removed once we implement some write lock.
+    #[allow(dead_code)]
+    // TODO: This attribute suppreses the warning, but should be removed once we implement some write lock.
     write_lock: Mutex<()>,
 }
 
@@ -17,6 +18,10 @@ impl ScriptManager {
     }
 
     pub fn scripts_dir(&self) -> &PathBuf {
-      &self.scripts_dir
-  }
+        &self.scripts_dir
+    }
+
+    pub fn lock(&self) -> MutexGuard<()> {
+        self.write_lock.lock().unwrap()
+    }
 }

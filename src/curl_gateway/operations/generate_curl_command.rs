@@ -1,7 +1,7 @@
 use crate::curl_gateway::models::{CurlCommand, HttpMethod};
 
 pub fn generate_curl_command(command: &CurlCommand) -> String {
-    let mut parts = vec!["curl".to_string()];
+    let mut parts = vec!["#!/bin/sh\n\ncurl".to_string()];
 
     if command.options.verbose {
         parts.push("-v".to_string());

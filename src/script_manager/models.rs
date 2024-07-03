@@ -2,6 +2,7 @@ use serde::{Serialize, Deserialize};
 use chrono::{DateTime, Utc};
 use thiserror::Error;
 use crate::curl_gateway::models::ParseError;
+use crate::curl_gateway::models::CurlCommand;
 
 #[derive(Serialize, Deserialize)]
 pub struct ScriptInfo {
@@ -21,9 +22,16 @@ pub struct ScriptList {
 pub struct ScriptDetails {
     pub name: String,
     pub path: String,
-    pub curl_command: crate::curl_gateway::models::CurlCommand,
+    pub curl_command: CurlCommand,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ScriptDetailsCreate {
+    pub name: String,
+    pub path: String,
+    pub curl_command: CurlCommand,
 }
 
 #[derive(Error, Debug)]
