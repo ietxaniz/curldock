@@ -10,57 +10,53 @@ All API endpoints are prefixed with `/api/v1`
   - Returns the health status of the API
 
 ### Scripts
-- POST /scripts
-  - Create a new curl script
+- GET /scripts[/{path}]
+  - List all scripts in the specified path (or root if no path is provided)
+  - Returns: 
+    ```json
+    { 
+      "path": string, 
+      "scripts": [
+        { 
+          "name": string, 
+          "created_at": timestamp, 
+          "updated_at": timestamp, 
+          "is_folder": boolean 
+        }
+      ]
+    }
+    ```
+
+- POST /scripts[/{path}]
+  - Create a new curl script in the specified path (or root if no path is provided)
   - Body: { "name": string, "content": string }
-  - Returns: { "id": string, "name": string, "content": string, "created_at": timestamp }
+  - Returns: { "name": string, "content": string, "created_at": timestamp }
 
-- GET /scripts
-  - List all scripts
-  - Query parameters:
-    - page: int (default 1)
-    - per_page: int (default 20)
-    - sort: string (e.g., "name", "-created_at")
-    - filter: string (e.g., "name:contains:test")
-  - Returns: { "total": int, "page": int, "per_page": int, "scripts": [{ "file_name": string, "created_at": timestamp, "updated_at": timestamp }] }
-
-- GET /scripts/{id}
-  - Get details of a specific script
-  - Returns: { "id": string, "name": string, "content": string, "created_at": timestamp, "last_executed": timestamp, "execution_count": int }
-
-- PUT /scripts/{id}
+- PUT /scripts/{path}/{name}
   - Update an existing script
-  - Body: { "name": string, "content": string }
-  - Returns: { "id": string, "name": string, "content": string, "updated_at": timestamp }
+  - Body: { "content": string }
+  - Returns: { "name": string, "content": string, "updated_at": timestamp }
 
-- DELETE /scripts/{id}
+- DELETE /scripts/{path}/{name}
   - Delete a script
   - Returns: { "success": boolean }
 
-- POST /scripts/{id}/execute
+
+### Script-details
+
+- GET /script-details/{path}/{name}
+  - Get all information of a script
+  - Returns: { "name": string, "path": string, "content": string, "created_at": timestamp, "updated_at": timestamp }
+
+### Execute
+
+- POST /execute/{path}/{name}
   - Execute a specific script
-  - Returns: { "id": string, "output": string, "executed_at": timestamp }
+  - Returns: { "name": string, "output": string, "executed_at": timestamp }
 
-### Bulk Operations
-- POST /bulk/scripts
-  - Bulk create scripts
-  - Body: [{ "name": string, "content": string }, ...]
-  - Returns: [{ "id": string, "name": string, "created_at": timestamp }, ...]
-
-- PUT /bulk/scripts
-  - Bulk update scripts
-  - Body: [{ "id": string, "name": string, "content": string }, ...]
-  - Returns: [{ "id": string, "updated_at": timestamp }, ...]
-
-- DELETE /bulk/scripts
-  - Bulk delete scripts
-  - Body: { "ids": [string] }
-  - Returns: { "success": boolean, "deleted_count": int }
 
 ## Error Responses
 All endpoints may return the following error responses:
 - 400 Bad Request: { "error": "Invalid input", "details": string }
-- 401 Unauthorized: { "error": "Authentication required" }
-- 403 Forbidden: { "error": "Insufficient permissions" }
 - 404 Not Found: { "error": "Resource not found" }
 - 500 Internal Server Error: { "error": "Internal server error" }
