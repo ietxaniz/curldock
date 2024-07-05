@@ -16,8 +16,8 @@ interface RequestHeadersProps {
 }
 
 const defaultHeaders = [
-  { name: 'Content-Type json', value: 'application/json' },
-  { name: 'Accept json', value: 'application/json' },
+  { name: 'Content-Type', value: 'application/json' },
+  { name: 'Accept', value: 'application/json' },
   { name: 'Authorization', value: 'Bearer ' },
   { name: 'User-Agent', value: 'MyApp/1.0' },
 ];
@@ -47,7 +47,7 @@ const RequestHeaders: React.FC<RequestHeadersProps> = ({ headers, onHeadersChang
   };
 
   const handleAddDefault = (headerName: string) => {
-    const defaultHeader = defaultHeaders.find(h => h.name === headerName);
+    const defaultHeader = defaultHeaders.find(h => `${h.name} ${h.value}` === headerName);
     if (defaultHeader) {
       handleAdd(defaultHeader.name, defaultHeader.value);
     }
@@ -87,8 +87,8 @@ const RequestHeaders: React.FC<RequestHeadersProps> = ({ headers, onHeadersChang
           </SelectTrigger>
           <SelectContent>
             {defaultHeaders.map(header => (
-              <SelectItem key={header.name} value={header.name}>
-                {header.name}
+              <SelectItem key={`${header.name} ${header.value}`} value={`${header.name} ${header.value}`}>
+                {`${header.name} ${header.value}`}
               </SelectItem>
             ))}
           </SelectContent>
