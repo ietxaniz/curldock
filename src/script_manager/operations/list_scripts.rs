@@ -7,6 +7,10 @@ use crate::script_manager::ScriptManager;
 impl ScriptManager {
     pub fn list_scripts(self: &Arc<Self>, path: Option<&str>) -> Result<ScriptList, std::io::Error> {
         let base_path = self.scripts_dir();
+        let local_path = match path {
+          Some(p) => p,
+          None => "",
+        };
         let full_path = match path {
             Some(p) => base_path.join(p),
             None => base_path.to_path_buf(),
@@ -25,6 +29,7 @@ impl ScriptManager {
                 created_at: DateTime::from(metadata.created()?),
                 updated_at: DateTime::from(metadata.modified()?),
                 is_folder,
+                path: local_path.to_string(),
             });
         }
 

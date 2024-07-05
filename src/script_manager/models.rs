@@ -10,6 +10,7 @@ pub struct ScriptInfo {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub is_folder: bool,
+    pub path: String,
 }
 
 #[derive(Serialize, Deserialize)]

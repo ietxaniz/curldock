@@ -15,6 +15,7 @@ pub async fn handle_request(
             let script_path = p.trim_start_matches("/v1/scripts").trim_start_matches('/').to_string();
             handlers::scripts::list_scripts(web::Path::from(script_path)).await
         },
+        ("/v1/scrrecursive", &Method::GET) => handlers::scripts::list_scripts_recursive().await,
         (p, &Method::GET) if p.starts_with("/v1/script-details") => {
             let remaining_path = p.trim_start_matches("/v1/script-details").trim_start_matches('/');
             let parts: Vec<&str> = remaining_path.splitn(2, '/').collect();

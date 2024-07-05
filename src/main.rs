@@ -14,7 +14,6 @@ async fn main() -> std::io::Result<()> {
     let config = config::get_config();
 
     println!("Starting server in {} mode", if config.is_development() { "DEVELOPMENT" } else { "PRODUCTION" });
-    println!("Development frontend port: {}", config.devfrontport);
 
     HttpServer::new(|| {
         let app = App::new();
