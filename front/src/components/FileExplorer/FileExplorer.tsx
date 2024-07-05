@@ -12,12 +12,13 @@ import {
   useCollapseItem,
   useRenameItem,
 } from "../../store/hooks/useFileexplorer";
-import { getSampleData } from "./getSampleData";
 
 import { ItemData } from "../../store/slices/fileexplorerSlice";
 import { FileExplorerDataProvider } from "./FileExplorerDataProvider";
 import ItemTitleRenderer from "./ItemTitleRenderer";
-import { getScriptsInfo } from "../../api/script";
+import { getScriptsInfo } from '../../api/script';
+import { getScriptsDetails } from "../../api/scriptDetail";
+import { useAddCurlItem } from "../../store/hooks/useCurl";
 
 const FileExplorer = () => {
   const isLoaded = useGetLoaded();
@@ -30,6 +31,7 @@ const FileExplorer = () => {
   const renameItem = useRenameItem();
   const [key, setKey] = useState(0);
   const mainDivRef = useRef<HTMLDivElement>(null);
+  const addCurlItem = useAddCurlItem();
 
   useEffect(() => {
     setKey(key + 1);
@@ -39,14 +41,13 @@ const FileExplorer = () => {
     const initialize = async () => {
       if (!isLoaded) {
         const serverData = await getScriptsInfo();
-        console.log(serverData);
         let folders: { [key: string]: number } = {};
         folders[""] = 0;
         const initialData = [{
           index: "root" as TreeItemIndex,
           isFolder: true,
           children: [] as number[],
-          data: { name: "Root", editing: false, idx: 0 },
+          data: { name: "Root", editing: false, idx: 0, path: "" },
         }];
         for (let i=0; i<serverData.length;i++) {
           const idx = i + 1;
@@ -59,7 +60,7 @@ const FileExplorer = () => {
               index: idx,
               children: [] as number[],
               isFolder: true,
-              data: { name: serverData[i].name, editing: false, idx: idx}
+              data: { name: serverData[i].name, editing: false, idx: idx, path: leftPathPath}
             });
             folders[path] = idx;
           } else {
@@ -67,7 +68,7 @@ const FileExplorer = () => {
               index: idx,
               children: [] as number[],
               isFolder: false,
-              data: { name: serverData[i].name, editing: false, idx: idx}
+              data: { name: serverData[i].name, editing: false, idx: idx, path: serverData[i].path}
             });
           }
         }
@@ -96,8 +97,18 @@ const FileExplorer = () => {
     renameItem(item, name);
   };
 
-  const onFocusItem = (item: TreeItem<ItemData>, id: string) => {
-    console.log("focus item", item, id);
+  const onFocusItem = async (item: TreeItem<ItemData>, id: string) => {
+    if (item.isFolder) {
+      return;
+    }
+    const path = item.data.path + "/" + item.data.name;
+    console.log(path);
+    console.log(item);
+    console.log(id);
+    const scriptDetails = await getScriptsDetails(item.data.path + "/" + item.data.name);
+    if (scriptDetails) {
+      addCurlItem({fileId: item.data.idx, script: scriptDetails}, item.data.idx);
+    }
   };
 
   const provider = new FileExplorerDataProvider();

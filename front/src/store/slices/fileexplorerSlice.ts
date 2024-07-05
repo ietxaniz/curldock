@@ -5,6 +5,7 @@ export interface ItemData {
   name: string;
   editing: boolean;
   idx: number;
+  path: string;
 }
 
 export interface FileexplorerState {

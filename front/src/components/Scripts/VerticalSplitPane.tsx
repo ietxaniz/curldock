@@ -7,6 +7,8 @@ const VerticalSplitPane = ({
   left,
   right,
   barWidth = 4,
+  leftOverflow,
+  rightOverflow,
 }: {
   minLeftWidth: number;
   maxLeftWidth: number;
@@ -14,6 +16,8 @@ const VerticalSplitPane = ({
   left: React.ReactNode;
   right: React.ReactNode;
   barWidth?: number;
+  leftOverflow?: boolean,
+  rightOverflow?:boolean,
 }) => {
   const [pos, setPos] = useState(initial || 50);
   const [isResizing, setIsResizing] = useState(false);
@@ -60,7 +64,7 @@ const VerticalSplitPane = ({
       onMouseUp={handleMouseUp}
       draggable={false}
     >
-      <div className="h-full w-full overflow-auto m-0" draggable={false}>
+      <div className={`h-full w-full ${ leftOverflow ? "overflow-auto" :""} m-0`} draggable={false}>
         {left}
       </div>
       <div
@@ -68,7 +72,7 @@ const VerticalSplitPane = ({
         className="bg-gray-300 border border-gray-400 border-1 w-full cursor-col-resize"
         onMouseDown={handleMouseDown}
       ></div>
-      <div className="h-full w-full overflow-auto m-0" draggable={false}>
+      <div className={`h-full w-full ${ rightOverflow ? "overflow-auto" :""} m-0`} draggable={false}>
         {right}
       </div>
       {isResizing && <div draggable={false} className="h-full w-full absolute inset-0 bg-white opacity-0 z-50"></div>}

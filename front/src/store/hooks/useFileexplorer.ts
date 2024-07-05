@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "./hooks";
-import { setLoaded, setTreeData, expandItem, collapseItem, renameItem, setEditingItem, TreeItem, ItemData, FileexplorerState } from "../slices/fileexplorerSlice";
+import { setLoaded, setTreeData, expandItem, collapseItem, renameItem, setEditingItem, TreeItem, ItemData } from "../slices/fileexplorerSlice";
 
 export const useGetEditingItem = (): string => {
   return useAppSelector(state => state.fileexplorer.editingItem);
