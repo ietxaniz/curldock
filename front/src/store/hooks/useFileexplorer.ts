@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "./hooks";
-import { setLoaded, setTreeData, expandItem, collapseItem, renameItem, setEditingItem, TreeItem, ItemData } from "../slices/fileexplorerSlice";
+import { setLoaded, setTreeData, expandItem, collapseItem, renameItem, setEditingItem, TreeItem, ItemData, setCurrentFileId } from "../slices/fileexplorerSlice";
 
 export const useGetEditingItem = (): string => {
   return useAppSelector(state => state.fileexplorer.editingItem);
@@ -60,4 +60,11 @@ export const useRenameItem = (): ((item: TreeItem<ItemData>, newName: string) =>
     dispatch(renameItem({ item, newName }));
   };
   return renameItemDispatch;
+};
+
+export const useGetCurrentFileId = () => useAppSelector(state => state.fileexplorer.currentFileId);
+
+export const useSetCurrentFileId = () => {
+  const dispatch = useAppDispatch();
+  return (id: number) => dispatch(setCurrentFileId(id));
 };

@@ -13,6 +13,7 @@ export interface FileexplorerState {
   expandedItems: string[];
   loaded: boolean;
   editingItem: string;
+  currentFileId: number;
 }
 
 const initialState:FileexplorerState = {
@@ -20,6 +21,7 @@ const initialState:FileexplorerState = {
   expandedItems: [],
   loaded: false,
   editingItem: '',
+  currentFileId: -1,
 };
 
 const filexplorerSlice = createSlice({
@@ -43,11 +45,14 @@ const filexplorerSlice = createSlice({
     },
     setEditingItem(state, action: PayloadAction<string>) {
       state.editingItem = action.payload;
-    }
+    },
+    setCurrentFileId(state, action: PayloadAction<number>) {
+      state.currentFileId = action.payload;
+    },
   }
 });
 
-export const { setLoaded, setTreeData, expandItem, collapseItem, renameItem, setEditingItem } = filexplorerSlice.actions;
+export const { setLoaded, setTreeData, expandItem, collapseItem, renameItem, setEditingItem, setCurrentFileId } = filexplorerSlice.actions;
 const fileexplorerReducer = filexplorerSlice.reducer;
 export default fileexplorerReducer;
 export type { TreeItem };

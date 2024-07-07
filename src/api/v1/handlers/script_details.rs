@@ -1,20 +1,73 @@
 use actix_web::{web, HttpResponse};
-use crate::script_manager::{self, models::ScriptError};
+use crate::script_manager::ScriptManager;
+use crate::script_manager::models::ScriptError;
+use crate::api::common::models::Response;
+use std::sync::Arc;
 
-pub async fn get_script_details(path_info: web::Path<(String, String)>) -> HttpResponse {
+pub async fn get_script_details(script_manager: web::Data<Arc<ScriptManager>>, path_info: web::Path<(String, String)>) -> HttpResponse {
     let (path, name) = path_info.into_inner();
-    let script_manager = script_manager::get_script_manager();
-    
     match script_manager.get_script_details(&path, &name) {
-        Ok(script_details) => HttpResponse::Ok().json(script_details),
-        Err(ScriptError::IoError(e)) if e.kind() == std::io::ErrorKind::NotFound => {
-            HttpResponse::NotFound().body("Script not found")
-        },
-        Err(ScriptError::CurlParseError(_)) => {
-            HttpResponse::BadRequest().body("Failed to parse curl command in script")
-        },
-        Err(ScriptError::IoError(_)) => {
-            HttpResponse::InternalServerError().body("An IO error occurred")
-        },
+        Ok(script_details) => HttpResponse::Ok().json(Response::success(script_details)),
+        Err(err) => {
+            let (mut status, response) = match err {
+                ScriptError::IoError(e) => (
+                    HttpResponse::NotFound(),
+                    Response::<()>::error(
+                        "IoError".to_string(),
+                        format!("Script not found: {}", e),
+                    ),
+                ),
+                ScriptError::CurlParseError(e) => (
+                    HttpResponse::BadRequest(),
+                    Response::<()>::error(
+                        "CurlParseError".to_string(),
+                        format!("Invalid curl command in script: {}", e),
+                    ),
+                ),
+                ScriptError::ExecutionError(e) => (
+                    HttpResponse::InternalServerError(),
+                    Response::<()>::error(
+                        "ExecutionError".to_string(),
+                        format!("Error executing script: {}", e),
+                    ),
+                ),
+                ScriptError::CommandGenerationError(e) => (
+                    HttpResponse::InternalServerError(),
+                    Response::<()>::error(
+                        "CommandGenerationError".to_string(),
+                        format!("Error generating curl command: {}", e),
+                    ),
+                ),
+                ScriptError::OutputCaptureError(e) => (
+                    HttpResponse::InternalServerError(),
+                    Response::<()>::error(
+                        "OutputCaptureError".to_string(),
+                        format!("Error capturing curl output: {}", e),
+                    ),
+                ),
+                ScriptError::OutputParseError(e) => (
+                    HttpResponse::InternalServerError(),
+                    Response::<()>::error(
+                        "OutputParseError".to_string(),
+                        format!("Error parsing curl output: {}", e),
+                    ),
+                ),
+                ScriptError::CommandExecutionError(e) => (
+                    HttpResponse::InternalServerError(),
+                    Response::<()>::error(
+                        "CommandExecutionError".to_string(),
+                        format!("Error during command execution: {}", e),
+                    ),
+                ),
+                ScriptError::ScriptNotFound(e) => (
+                    HttpResponse::NotFound(),
+                    Response::<()>::error(
+                        "ScriptNotFound".to_string(),
+                        format!("Script not found: {}", e),
+                    ),
+                ),
+            };
+            status.json(response)
+        }
     }
 }

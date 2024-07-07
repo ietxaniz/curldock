@@ -58,7 +58,7 @@ const VerticalSplitPane = ({
   return (
     <div
       ref={divRef}
-      className={`h-full w-full m-0 p-0 grid ${isResizing ? "cursor-col-resize" : ""}`}
+      className={`h-full w-full m-0 p-0 overflow-visible grid ${isResizing ? "cursor-col-resize" : ""}`}
       style={style}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

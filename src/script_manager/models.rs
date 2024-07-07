@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use thiserror::Error;
 use crate::curl_gateway::models::ParseError;
 use crate::curl_gateway::models::CurlCommand;
+use crate::curl_gateway::models::CommandExecutionError;
 
 #[derive(Serialize, Deserialize)]
 pub struct ScriptInfo {
@@ -49,4 +50,22 @@ pub enum ScriptError {
     
     #[error("Curl parse error: {0}")]
     CurlParseError(#[from] ParseError),
+
+    #[error("Script execution error: {0}")]
+    ExecutionError(String),
+
+    #[error("Command generation error: {0}")]
+    CommandGenerationError(String),
+
+    #[error("Output capture error: {0}")]
+    OutputCaptureError(String),
+
+    #[error("Output parse error: {0}")]
+    OutputParseError(String),
+
+    #[error("Command execution error: {0}")]
+    CommandExecutionError(#[from] CommandExecutionError),
+
+    #[error("Script not found: {0}")]
+    ScriptNotFound(String),
 }

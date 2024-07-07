@@ -1,4 +1,3 @@
-pub mod handlers;
 pub mod v1;
 pub mod common;
 mod routes;

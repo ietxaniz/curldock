@@ -1,7 +1,6 @@
-use actix_web::{HttpRequest, HttpResponse, http::Method, web};
-use super::handlers::hello;
 use super::common::handlers::not_found;
 use super::v1;
+use actix_web::{http::Method, web, HttpRequest, HttpResponse};
 
 pub async fn handle_request(
     path: &str,
@@ -9,13 +8,10 @@ pub async fn handle_request(
     req: HttpRequest,
     body: web::Bytes,
 ) -> HttpResponse {
-    // Remove the leading "/api" from the path
     let api_path = path.trim_start_matches("/api");
 
     match api_path {
-        "/hello" if method == &Method::GET => hello::hello().await,
         path if path.starts_with("/v1") => v1::handle_request(path, method, &req, body).await,
-        // Add other top-level API routes here if needed
         _ => not_found::not_found().await,
     }
 }

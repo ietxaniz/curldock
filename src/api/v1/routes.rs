@@ -1,6 +1,6 @@
 use super::handlers;
 use crate::api::common::handlers::not_found;
-use crate::script_manager::models::ScriptDetailsCreate;
+use crate::script_manager::{self, models::ScriptDetailsCreate};
 use actix_web::{http::Method, web, HttpRequest, HttpResponse};
 
 pub async fn handle_request(
@@ -9,8 +9,9 @@ pub async fn handle_request(
     _req: &HttpRequest,
     body: web::Bytes,
 ) -> HttpResponse {
+    let script_manager = script_manager::get_script_manager().clone();
+
     match (path, method) {
-        ("/v1/hello", &Method::GET) => handlers::hello::hello().await,
         (p, &Method::GET) if p.starts_with("/v1/scripts") => {
             let script_path = p
                 .trim_start_matches("/v1/scripts")
@@ -26,18 +27,22 @@ pub async fn handle_request(
             let parts: Vec<&str> = remaining_path.splitn(2, '/').collect();
             match parts.len() {
                 1 => {
-                    handlers::script_details::get_script_details(web::Path::from((
-                        "".to_string(),
-                        parts[0].to_string(),
-                    )))
-                    .await
+                    handlers::script_details::get_script_details(
+                        web::Data::new(script_manager.clone()),
+                        web::Path::from((
+                            "".to_string(),
+                            parts[0].to_string(),
+                        )),
+                    ).await
                 }
                 2 => {
-                    handlers::script_details::get_script_details(web::Path::from((
-                        parts[0].to_string(),
-                        parts[1].to_string(),
-                    )))
-                    .await
+                    handlers::script_details::get_script_details(
+                        web::Data::new(script_manager.clone()),
+                        web::Path::from((
+                            parts[0].to_string(),
+                            parts[1].to_string(),
+                        )),
+                    ).await
                 }
                 _ => not_found::not_found().await,
             }

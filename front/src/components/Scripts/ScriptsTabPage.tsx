@@ -1,16 +1,20 @@
 import { TabGroup, TabList, TabPanels } from "@headlessui/react";
-import { useGetFileIds } from "../../store/hooks/useCurl";
 import TabHeader from "./TabHeader";
 import TabContent from "./TabContent";
 
+import { useMeasureHeaderHeight } from "./useMeasureHeaderHeight";
+import { useSelectedIndex } from "./useSelectedIndex";
+
 const ScritpsTabPage = () => {
-  const fileIds = useGetFileIds();
+  const { selectedIndex, setSelectedIndex, fileIds } = useSelectedIndex();
+  const { tabListRef } = useMeasureHeaderHeight(fileIds);
+
   return (
     <div className="w-full h-full">
-      <TabGroup className="w-full h-full flex flex-col">
-        <TabList>
+      <TabGroup className="w-full h-full flex flex-col" selectedIndex={selectedIndex} onChange={setSelectedIndex}>
+        <TabList as="div" ref={tabListRef} className="flex">
           {fileIds.map((id) => {
-            return <TabHeader idx={id} key={id}/>;
+            return <TabHeader idx={id} key={id} />;
           })}
         </TabList>
         <TabPanels className="h-full w-full p-2">
