@@ -1,10 +1,13 @@
-use actix_web::{web, HttpResponse};
-use crate::script_manager::ScriptManager;
-use crate::script_manager::models::ScriptError;
 use crate::api::common::models::Response;
+use crate::script_manager::models::ScriptError;
+use crate::script_manager::ScriptManager;
+use actix_web::{web, HttpResponse};
 use std::sync::Arc;
 
-pub async fn get_script_details(script_manager: web::Data<Arc<ScriptManager>>, path_info: web::Path<(String, String)>) -> HttpResponse {
+pub async fn get_script_details(
+    script_manager: web::Data<Arc<ScriptManager>>,
+    path_info: web::Path<(String, String)>,
+) -> HttpResponse {
     let (path, name) = path_info.into_inner();
     match script_manager.get_script_details(&path, &name) {
         Ok(script_details) => HttpResponse::Ok().json(Response::success(script_details)),
@@ -64,6 +67,13 @@ pub async fn get_script_details(script_manager: web::Data<Arc<ScriptManager>>, p
                     Response::<()>::error(
                         "ScriptNotFound".to_string(),
                         format!("Script not found: {}", e),
+                    ),
+                ),
+                ScriptError::InvalidPath(e) => (
+                    HttpResponse::BadRequest(),
+                    Response::<()>::error(
+                        "InvalidPath".to_string(),
+                        format!("Invalid path:  {}", e),
                     ),
                 ),
             };

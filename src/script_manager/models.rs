@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use chrono::{DateTime, Utc};
 use thiserror::Error;
 use crate::curl_gateway::models::ParseError;
 use crate::curl_gateway::models::CurlCommand;
@@ -9,9 +8,9 @@ use crate::curl_gateway::models::CommandExecutionError;
 pub struct ScriptInfo {
     pub name: String,
     #[serde(rename = "createdAt")]
-    pub created_at: DateTime<Utc>,
+    pub created_at: u64,
     #[serde(rename = "updatedAt")]
-    pub updated_at: DateTime<Utc>,
+    pub updated_at: u64,
     #[serde(rename = "isFolder")]
     pub is_folder: bool,
     pub path: String,
@@ -30,9 +29,9 @@ pub struct ScriptDetails {
     #[serde(rename = "curlCommand")]
     pub curl_command: CurlCommand,
     #[serde(rename = "createdAt")]
-    pub created_at: DateTime<Utc>,
+    pub created_at: u64,
     #[serde(rename = "updatedAt")]
-    pub updated_at: DateTime<Utc>,
+    pub updated_at: u64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -68,4 +67,7 @@ pub enum ScriptError {
 
     #[error("Script not found: {0}")]
     ScriptNotFound(String),
+
+    #[error("Invalid path: {0}")]
+    InvalidPath(String),
 }

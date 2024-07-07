@@ -19,17 +19,3 @@ pub async fn list_scripts(path: web::Path<String>) -> HttpResponse {
     }
 }
 
-pub async fn list_scripts_recursive() -> HttpResponse {
-    let script_manager = script_manager::get_script_manager();
-
-    match script_manager.list_scripts_recursive() {
-        Ok(script_list) => HttpResponse::Ok().json(Response::success(script_list)),
-        Err(e) => {
-            let response = Response::<()>::error(
-                "IoError".to_string(),
-                format!("Failed to list scripts recursively: {}", e),
-            );
-            HttpResponse::InternalServerError().json(response)
-        }
-    }
-}

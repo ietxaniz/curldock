@@ -1,6 +1,9 @@
-use actix_web::{web, HttpResponse};
-use crate::script_manager::{self, models::{ScriptDetailsCreate, ScriptError}};
 use crate::api::common::models::Response;
+use crate::script_manager::{
+    self,
+    models::{ScriptDetailsCreate, ScriptError},
+};
+use actix_web::{web, HttpResponse};
 
 pub async fn update_script(script_details: web::Json<ScriptDetailsCreate>) -> HttpResponse {
     let script_manager = script_manager::get_script_manager();
@@ -63,6 +66,13 @@ pub async fn update_script(script_details: web::Json<ScriptDetailsCreate>) -> Ht
                     Response::<()>::error(
                         "ScriptNotFound".to_string(),
                         format!("Script not found: {}", e),
+                    ),
+                ),
+                ScriptError::InvalidPath(e) => (
+                    HttpResponse::BadRequest(),
+                    Response::<()>::error(
+                        "InvalidPath".to_string(),
+                        format!("Invalid path:  {}", e),
                     ),
                 ),
             };

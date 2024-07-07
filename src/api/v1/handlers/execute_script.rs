@@ -1,6 +1,6 @@
-use actix_web::{web, HttpResponse};
-use crate::script_manager::{self, models::ScriptError};
 use crate::api::common::models::Response;
+use crate::script_manager::{self, models::ScriptError};
+use actix_web::{web, HttpResponse};
 
 pub async fn execute_script(path_info: web::Path<(String, String)>) -> HttpResponse {
     let (path, name) = path_info.into_inner();
@@ -71,6 +71,13 @@ pub async fn execute_script(path_info: web::Path<(String, String)>) -> HttpRespo
                     Response::<()>::error(
                         "ScriptNotFound".to_string(),
                         format!("Script not found: {}", e),
+                    ),
+                ),
+                ScriptError::InvalidPath(e) => (
+                    HttpResponse::BadRequest(),
+                    Response::<()>::error(
+                        "InvalidPath".to_string(),
+                        format!("Invalid path:  {}", e),
                     ),
                 ),
             };

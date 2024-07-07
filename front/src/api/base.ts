@@ -87,8 +87,8 @@ export interface ScriptDetails {
   name: string;
   path: string;
   curlCommand: CurlCommand;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface ScriptDetailsCreate {
@@ -99,8 +99,8 @@ export interface ScriptDetailsCreate {
 
 export interface ScriptInfo {
   name: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: number;
+  updatedAt: number;
   isFolder: boolean;
   path: string;
 }
@@ -108,4 +108,8 @@ export interface ScriptInfo {
 export interface ScriptList {
   path: string;
   scripts: ScriptInfo[];
+}
+
+export interface FolderCreate {
+  path: string;
 }

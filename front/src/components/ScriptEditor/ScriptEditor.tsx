@@ -23,8 +23,20 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ fileId }) => {
     setBodyContent(value || '');
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     console.log('Sending request:', {
+      method,
+      url,
+      headers,
+      cookies,
+      bodyContent,
+      options,
+    });
+    // Implement actual request sending logic here
+  };
+
+  const handleSave = async () => {
+    console.log('Saving request:', {
       method,
       url,
       headers,
@@ -59,6 +71,9 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ fileId }) => {
           <Input type="text" placeholder="Enter request URL" value={url} onChange={(e) => setUrl(e.target.value)} className="flex-grow" />
           <Button onClick={handleSend} variant="secondary">
             Send
+          </Button>
+          <Button onClick={handleSave} variant="secondary">
+            Save
           </Button>
         </div>
 
