@@ -7,8 +7,11 @@ use crate::curl_gateway::models::CurlCommand;
 #[derive(Serialize, Deserialize)]
 pub struct ScriptInfo {
     pub name: String,
+    #[serde(rename = "createdAt")]
     pub created_at: DateTime<Utc>,
+    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
+    #[serde(rename = "isFolder")]
     pub is_folder: bool,
     pub path: String,
 }
@@ -23,8 +26,11 @@ pub struct ScriptList {
 pub struct ScriptDetails {
     pub name: String,
     pub path: String,
+    #[serde(rename = "curlCommand")]
     pub curl_command: CurlCommand,
+    #[serde(rename = "createdAt")]
     pub created_at: DateTime<Utc>,
+    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
 }
 
@@ -32,6 +38,7 @@ pub struct ScriptDetails {
 pub struct ScriptDetailsCreate {
     pub name: String,
     pub path: String,
+    #[serde(rename = "curlCommand")]
     pub curl_command: CurlCommand,
 }
 

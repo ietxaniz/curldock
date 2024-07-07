@@ -16,7 +16,7 @@ const ItemTitleRenderer = ({item, id, provider}:{item: TreeItem<ItemData>,id:num
       }
     }
     getData();
-  }, [id, name])
+  }, [item, name, id, provider])
   return (
     <div>{name}</div>
   )

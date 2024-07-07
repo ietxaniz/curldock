@@ -8,9 +8,9 @@
 
 export interface ScriptInfo {
   name: string;
-  created_at: number;
-  updated_at: number;
-  is_folder: number;
+  createdAt: number;
+  updatedAt: number;
+  isFolder: number;
   path: string;
 }
 

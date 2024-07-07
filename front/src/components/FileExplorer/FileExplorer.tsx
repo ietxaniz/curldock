@@ -11,7 +11,7 @@ import {
   useExpandItem,
   useCollapseItem,
   useRenameItem,
-} from "../../store/hooks/useFileexplorer";
+} from "../../store/hooks/useFileexplorer"
 
 import { ItemData } from "../../store/slices/fileexplorerSlice";
 import { FileExplorerDataProvider } from "./FileExplorerDataProvider";
@@ -34,14 +34,14 @@ const FileExplorer = () => {
   const addCurlItem = useAddCurlItem();
 
   useEffect(() => {
-    setKey(key + 1);
+    setKey((prevKey) => prevKey + 1);
   }, [treeData]);
 
   useEffect(() => {
     const initialize = async () => {
       if (!isLoaded) {
         const serverData = await getScriptsInfo();
-        let folders: { [key: string]: number } = {};
+        const folders: { [key: string]: number } = {};
         folders[""] = 0;
         const initialData = [{
           index: "root" as TreeItemIndex,
@@ -53,7 +53,7 @@ const FileExplorer = () => {
           const idx = i + 1;
           const parentidx = folders[serverData[i].path];
           initialData[parentidx].children.push(idx);
-          if (serverData[i].is_folder) {
+          if (serverData[i].isFolder) {
             const leftPathPath = serverData[i].path.length > 0 ? serverData[i].path + "/" : "";
             const path = leftPathPath + serverData[i].name;
             initialData.push({
@@ -107,7 +107,7 @@ const FileExplorer = () => {
     console.log(id);
     const scriptDetails = await getScriptsDetails(item.data.path + "/" + item.data.name);
     if (scriptDetails) {
-      addCurlItem({fileId: item.data.idx, script: scriptDetails}, item.data.idx);
+      addCurlItem({fileId: item.data.idx, script: scriptDetails.curlCommand}, item.data.idx);
     }
   };
 

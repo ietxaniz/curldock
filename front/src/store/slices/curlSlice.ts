@@ -47,7 +47,7 @@ export interface ScriptDetailsCreate {
 
 export interface Curl {
   fileId: number;
-  script: ScriptDetails;
+  script: CurlCommand;
   result?: CurlCommandResult;
 }
 

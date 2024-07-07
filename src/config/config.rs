@@ -12,6 +12,7 @@ pub enum Mode {
 pub struct Config {
     pub mode: Mode,
     pub devfrontport: u16,
+    #[serde(rename = "scriptsFolder")]
     pub scripts_folder: PathBuf,
     pub port: u16,
 }

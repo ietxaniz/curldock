@@ -42,7 +42,9 @@ pub enum ParseError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CurlCommandResult {
     pub request: CurlCommand,
+    #[serde(rename = "responseHeaders")]
     pub response_headers: HashMap<String, String>,
+    #[serde(rename = "statusCode")]
     pub status_code: u16,
     pub date: String,
     pub body: String,

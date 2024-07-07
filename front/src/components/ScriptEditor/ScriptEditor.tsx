@@ -1,21 +1,17 @@
-import { useState } from 'react';
 import { Editor, OnChange } from '@monaco-editor/react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import RequestHeaders from './RequestHeaders';
+import { HttpMethod } from '../../store/slices/curlSlice';
+import { useScriptEditorData } from './useScriptEditorData';
 
-type Header = {
-  id: string;
-  name: string;
-  value: string;
-};
+interface ScriptEditorProps {
+  fileId: number;
+}
 
-const ScriptEditor = () => {
-  const [method, setMethod] = useState('GET');
-  const [url, setUrl] = useState('');
-  const [headers, setHeaders] = useState<Header[]>([]);
-  const [bodyContent, setBodyContent] = useState('');
+const ScriptEditor: React.FC<ScriptEditorProps> = ({ fileId }) => {
+  const { method, setMethod, url, setUrl, headers, setHeaders, bodyContent, setBodyContent } = useScriptEditorData(fileId);
 
   const handleBodyChange: OnChange = (value, _event) => {
     setBodyContent(value || '');
@@ -25,7 +21,7 @@ const ScriptEditor = () => {
     console.log('Sending request:', { 
       method, 
       url, 
-      headers: headers.reduce((acc, h) => ({ ...acc, [h.name]: h.value }), {}),
+      headers,
       bodyContent 
     });
     // Implement actual request sending logic here
@@ -34,15 +30,14 @@ const ScriptEditor = () => {
   return (
     <div className="p-4 space-y-4">
       <div className="flex space-x-2">
-        <Select value={method} onValueChange={setMethod}>
+        <Select value={method} onValueChange={(value) => setMethod(value as HttpMethod)}>
           <SelectTrigger className="w-[100px]">
             <SelectValue placeholder="Method" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="GET">GET</SelectItem>
-            <SelectItem value="POST">POST</SelectItem>
-            <SelectItem value="PUT">PUT</SelectItem>
-            <SelectItem value="DELETE">DELETE</SelectItem>
+            {Object.values(HttpMethod).map((m) => (
+              <SelectItem key={m} value={m}>{m}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Input 
@@ -64,7 +59,7 @@ const ScriptEditor = () => {
         <div className="border border-gray-200 rounded-md">
           <h3 className="px-4 py-2 bg-gray-100 font-medium">Body</h3>
           <Editor
-            height="300px"
+            height="450px"
             defaultLanguage="json"
             value={bodyContent}
             onChange={handleBodyChange}
