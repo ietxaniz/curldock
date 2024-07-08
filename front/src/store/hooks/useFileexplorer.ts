@@ -1,8 +1,19 @@
 import { useAppDispatch, useAppSelector } from "./hooks";
-import { setLoaded, setTreeData, expandItem, collapseItem, renameItem, setEditingItem, TreeItem, ItemData, setCurrentFileId } from "../slices/fileexplorerSlice";
+import {
+  setLoaded,
+  setTreeData,
+  expandItem,
+  collapseItem,
+  renameItem,
+  setEditingItem,
+  TreeItem,
+  ItemData,
+  setCurrentFileId,
+  addFileToTree,
+} from "../slices/fileexplorerSlice";
 
 export const useGetEditingItem = (): string => {
-  return useAppSelector(state => state.fileexplorer.editingItem);
+  return useAppSelector((state) => state.fileexplorer.editingItem);
 };
 
 export const useSetEditingItem = (): ((itemId: string) => void) => {
@@ -11,19 +22,19 @@ export const useSetEditingItem = (): ((itemId: string) => void) => {
 };
 
 export const useGetLoaded = () => {
-  return useAppSelector(state => state.fileexplorer.loaded);
+  return useAppSelector((state) => state.fileexplorer.loaded);
 };
 
-export const useSetLoaded = ():((loaded:boolean)=> void)=> {
+export const useSetLoaded = (): ((loaded: boolean) => void) => {
   const dispatch = useAppDispatch();
-  const setLoadedDispatch = (loaded:boolean) => {
+  const setLoadedDispatch = (loaded: boolean) => {
     dispatch(setLoaded(loaded));
-  }
+  };
   return setLoadedDispatch;
-}
+};
 
 export const useGetTreeData = () => {
-  return useAppSelector(state => state.fileexplorer.treeData);
+  return useAppSelector((state) => state.fileexplorer.treeData);
 };
 
 export const useSetTreeData = (): ((treeData: TreeItem<ItemData>[]) => void) => {
@@ -35,7 +46,7 @@ export const useSetTreeData = (): ((treeData: TreeItem<ItemData>[]) => void) => 
 };
 
 export const useGetExpandedItems = () => {
-  return useAppSelector(state => state.fileexplorer.expandedItems);
+  return useAppSelector((state) => state.fileexplorer.expandedItems);
 };
 
 export const useExpandItem = (): ((itemId: string) => void) => {
@@ -62,9 +73,16 @@ export const useRenameItem = (): ((item: TreeItem<ItemData>, newName: string) =>
   return renameItemDispatch;
 };
 
-export const useGetCurrentFileId = () => useAppSelector(state => state.fileexplorer.currentFileId);
+export const useGetCurrentFileId = () => useAppSelector((state) => state.fileexplorer.currentFileId);
 
 export const useSetCurrentFileId = () => {
   const dispatch = useAppDispatch();
   return (id: number) => dispatch(setCurrentFileId(id));
+};
+
+export const useAddFileToTree = (): ((name: string, path: string, isFolder: boolean) => void) => {
+  const dispatch = useAppDispatch();
+  return (name: string, path: string, isFolder: boolean) => {
+    dispatch(addFileToTree({ name, path, isFolder }));
+  };
 };

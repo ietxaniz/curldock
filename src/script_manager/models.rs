@@ -56,9 +56,6 @@ pub enum ScriptError {
     #[error("Command generation error: {0}")]
     CommandGenerationError(String),
 
-    #[error("Output capture error: {0}")]
-    OutputCaptureError(String),
-
     #[error("Output parse error: {0}")]
     OutputParseError(String),
 

@@ -24,7 +24,7 @@ async fn main() -> std::io::Result<()> {
             app.configure(revproxy::routes::prod_config)
         }
     })
-    .bind(("127.0.0.1", config.port))?
+    .bind(("0.0.0.0", config.port))?
     .run()
     .await
 }

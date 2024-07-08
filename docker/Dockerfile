@@ -25,7 +25,7 @@ COPY --from=frontend-builder /usr/src/app/dist ./front/dist
 
 # Set environment variables
 ENV MODE=PROD
-ENV SCRIPTSFOLDER=rest-examples
+ENV SCRIPTSFOLDER=/scripts
 ENV PORT=2080
 
 EXPOSE 2080

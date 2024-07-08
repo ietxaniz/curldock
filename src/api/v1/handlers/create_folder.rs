@@ -1,6 +1,6 @@
-use actix_web::{web, HttpResponse};
-use crate::script_manager::{self, models::ScriptError};
 use crate::api::common::models::Response;
+use crate::script_manager::{self, models::ScriptError};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -8,7 +8,17 @@ pub struct CreateFolderRequest {
     pub path: String,
 }
 
-pub async fn create_folder(folder_request: web::Json<CreateFolderRequest>) -> HttpResponse {
+pub async fn create_folder(body: web::Bytes) -> HttpResponse {
+    let folder_request: CreateFolderRequest = match serde_json::from_slice(&body) {
+        Ok(data) => data,
+        Err(e) => {
+            return HttpResponse::BadRequest().json(Response::<()>::error(
+                "InvalidJSON".to_string(),
+                format!("Failed to parse JSON: {}", e),
+            ))
+        }
+    };
+
     let script_manager = script_manager::get_script_manager();
 
     match script_manager.create_folder(&folder_request.path) {

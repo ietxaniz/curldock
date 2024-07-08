@@ -2,29 +2,29 @@
 
 ## Documentation
 - [ ] Create README.md
-  - [ ] Project description
-  - [ ] Installation instructions
-  - [ ] Usage guide
+  - [x] Project description
+  - [x] Installation instructions
+  - [x] Usage guide
   - [ ] Contributing guidelines
 
 ## Features
 - [ ] Manage scripts via user interface
-  - [ ] Create new script
-  - [ ] Rename existing script
-  - [ ] Create folder
+  - [x] Create new script
+  - [x] Rename existing script
+  - [x] Create folder
   - [ ] Move script to another folder
 - [ ] Implement search functionality for scripts
-- [ ] Add export/import functionality for scripts
 - [ ] Implement environment variables management
 
 ## Development
-- [ ] Create Dockerfile
-- [ ] Create a build script that:
-  - [ ] Compiles the Rust backend
-  - [ ] Builds the JavaScript frontend
-  - [ ] Generates Docker images for different architectures
-  - [ ] Pushes images to DockerHub registry
+- [x] Create Dockerfile
+- [x] Create a build script that:
+  - [x] Compiles the Rust backend
+  - [x] Builds the JavaScript frontend
+  - [x] Generates Docker images for different architectures
+  - [x] Pushes images to DockerHub registry
 - [ ] Set up CI/CD pipeline (e.g., GitHub Actions)
+- [ ] Implement some testing endpoints in (/tesing/v1)
 - [ ] Implement automated testing
   - [ ] Unit tests for backend
   - [ ] Unit tests for frontend
@@ -32,6 +32,7 @@
 
 ## Enhancements
 - [ ] Improve error handling and user feedback
+- [ ] Improve routing algorithm
 
 ## Deployment
 - [ ] Set up demo instance

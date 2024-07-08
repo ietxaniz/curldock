@@ -1,15 +1,28 @@
 use crate::api::common::models::Response;
+use crate::script_manager;
 use crate::script_manager::models::ScriptError;
-use crate::script_manager::ScriptManager;
-use actix_web::{web, HttpResponse};
-use std::sync::Arc;
+use actix_web::HttpResponse;
 
-pub async fn get_script_details(
-    script_manager: web::Data<Arc<ScriptManager>>,
-    path_info: web::Path<(String, String)>,
-) -> HttpResponse {
-    let (path, name) = path_info.into_inner();
-    match script_manager.get_script_details(&path, &name) {
+pub async fn get_script_details(path: String) -> HttpResponse {
+    let script_manager = script_manager::get_script_manager();
+
+    let remaining_path = path
+        .trim_start_matches("/v1/script-details")
+        .trim_start_matches('/');
+    let parts: Vec<&str> = remaining_path.splitn(2, '/').collect();
+
+    let (path, name) = match parts.len() {
+        1 => ("", parts[0]),
+        2 => (parts[0], parts[1]),
+        _ => {
+            return HttpResponse::BadRequest().json(Response::<()>::error(
+                "InvalidPath".to_string(),
+                "Invalid path format".to_string(),
+            ))
+        }
+    };
+
+    match script_manager.get_script_details(path, name) {
         Ok(script_details) => HttpResponse::Ok().json(Response::success(script_details)),
         Err(err) => {
             let (mut status, response) = match err {
@@ -41,13 +54,6 @@ pub async fn get_script_details(
                         format!("Error generating curl command: {}", e),
                     ),
                 ),
-                ScriptError::OutputCaptureError(e) => (
-                    HttpResponse::InternalServerError(),
-                    Response::<()>::error(
-                        "OutputCaptureError".to_string(),
-                        format!("Error capturing curl output: {}", e),
-                    ),
-                ),
                 ScriptError::OutputParseError(e) => (
                     HttpResponse::InternalServerError(),
                     Response::<()>::error(
@@ -73,7 +79,7 @@ pub async fn get_script_details(
                     HttpResponse::BadRequest(),
                     Response::<()>::error(
                         "InvalidPath".to_string(),
-                        format!("Invalid path:  {}", e),
+                        format!("Invalid path: {}", e),
                     ),
                 ),
             };

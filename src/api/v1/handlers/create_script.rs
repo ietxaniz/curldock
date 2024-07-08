@@ -5,10 +5,23 @@ use crate::script_manager::{
 };
 use actix_web::{web, HttpResponse};
 
-pub async fn create_script(script_details: web::Json<ScriptDetailsCreate>) -> HttpResponse {
+pub async fn create_script(body: web::Bytes) -> HttpResponse {
+    let body_str = String::from_utf8_lossy(&body);
+    println!("Received body: {}", body_str);
+
+    let script_details: ScriptDetailsCreate = match serde_json::from_slice(&body) {
+        Ok(data) => data,
+        Err(e) => {
+            return HttpResponse::BadRequest().json(Response::<()>::error(
+                "InvalidJSON".to_string(),
+                format!("Failed to parse JSON: {}", e),
+            ))
+        }
+    };
+
     let script_manager = script_manager::get_script_manager();
 
-    match script_manager.create_script(script_details.into_inner()) {
+    match script_manager.create_script(script_details) {
         Ok(created_script) => HttpResponse::Created().json(Response::success(created_script)),
         Err(err) => {
             let (mut status, response) = match err {
@@ -38,13 +51,6 @@ pub async fn create_script(script_details: web::Json<ScriptDetailsCreate>) -> Ht
                     Response::<()>::error(
                         "CommandGenerationError".to_string(),
                         format!("Error generating curl command: {}", e),
-                    ),
-                ),
-                ScriptError::OutputCaptureError(e) => (
-                    HttpResponse::InternalServerError(),
-                    Response::<()>::error(
-                        "OutputCaptureError".to_string(),
-                        format!("Error capturing curl output: {}", e),
                     ),
                 ),
                 ScriptError::OutputParseError(e) => (

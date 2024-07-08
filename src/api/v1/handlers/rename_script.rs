@@ -1,26 +1,40 @@
 // File: v1/handlers/rename_script.rs
 
-use actix_web::{web, HttpResponse};
-use crate::script_manager::{self, models::ScriptError};
 use crate::api::common::models::Response;
+use crate::script_manager::{self, models::ScriptError};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct RenameScriptRequest {
+    #[serde(rename = "oldName")]
     pub old_name: String,
+    #[serde(rename = "newName")]
     pub new_name: String,
+    #[serde(rename = "oldPath")]
     pub old_path: String,
+    #[serde(rename = "newPath")]
     pub new_path: String,
 }
 
-pub async fn rename_script(rename_request: web::Json<RenameScriptRequest>) -> HttpResponse {
+pub async fn rename_script(body: web::Bytes) -> HttpResponse {
+    let rename_request: RenameScriptRequest = match serde_json::from_slice(&body) {
+        Ok(data) => data,
+        Err(e) => {
+            return HttpResponse::BadRequest().json(Response::<()>::error(
+                "InvalidJSON".to_string(),
+                format!("Failed to parse JSON: {}", e),
+            ))
+        }
+    };
+
     let script_manager = script_manager::get_script_manager();
 
     match script_manager.rename_script(
         &rename_request.old_path,
         &rename_request.old_name,
         &rename_request.new_path,
-        &rename_request.new_name
+        &rename_request.new_name,
     ) {
         Ok(renamed_script) => HttpResponse::Ok().json(Response::success(renamed_script)),
         Err(err) => {
@@ -43,7 +57,7 @@ pub async fn rename_script(rename_request: web::Json<RenameScriptRequest>) -> Ht
                             ),
                         )
                     }
-                },
+                }
                 ScriptError::ScriptNotFound(e) => (
                     HttpResponse::NotFound(),
                     Response::<()>::error(

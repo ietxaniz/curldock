@@ -122,10 +122,6 @@ pub enum CommandExecutionError {
     CommandGenerationError(String),
     #[error("Failed to execute curl command: {0}")]
     ExecutionError(String),
-    #[error("Failed to capture curl output: {0}")]
-    OutputCaptureError(String),
     #[error("Failed to parse curl output: {0}")]
     OutputParseError(String),
-    #[error("Invalid HTTP status code: {0}")]
-    InvalidStatusCode(String),
 }

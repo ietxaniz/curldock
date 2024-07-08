@@ -23,9 +23,7 @@ impl ScriptManager {
             .map_err(|e| match e {
                 CommandExecutionError::ExecutionError(msg) => ScriptError::ExecutionError(msg),
                 CommandExecutionError::CommandGenerationError(msg) => ScriptError::CommandGenerationError(msg),
-                CommandExecutionError::OutputCaptureError(msg) => ScriptError::OutputCaptureError(msg),
                 CommandExecutionError::OutputParseError(msg) => ScriptError::OutputParseError(msg),
-                CommandExecutionError::InvalidStatusCode(msg) => ScriptError::ExecutionError(format!("Invalid status code: {}", msg)),
             })
     }
 }

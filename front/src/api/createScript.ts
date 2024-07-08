@@ -1,6 +1,7 @@
 import { Response, checkError, ScriptDetails, ScriptDetailsCreate } from './base';
 
 export const createScript = async (scriptDetails: ScriptDetailsCreate): Promise<ScriptDetails | null> => {
+  console.log(JSON.stringify(scriptDetails));
   try {
     const response = await fetch('/api/v1/script', {
       method: 'POST',
