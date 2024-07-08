@@ -44,6 +44,33 @@ The frontend application is similar to other API testing tools like Postman or I
 
 ![](./doc/curldock.png)
 
+## Quick Tutorial
+
+This tutorial uses JSONPlaceholder, a free fake REST API for testing and prototyping.
+
+Once the application is running and you have opened a browser pointing to the serving URL, follow these steps:
+
+1. Click on the + icon in the top left of the application. This will open an input for adding the script name.
+2. Write "jsonplaceholder.sh" and click OK.
+3. In the request interface:
+   - Write `https://jsonplaceholder.typicode.com/posts/1` in the URL field next to the GET method.
+   - Check the "verbose" option under Options.
+   - At the bottom, check all time-related options. These provide detailed timing information for each stage of the request, useful for performance analysis.
+4. Click "Send" at the top of the page.
+5. You will see the response in the right window, including the JSON data and timing information.
+
+![](./doc/tutorial.png)
+
+The generated script is saved in the `$(pwd)/scripts:/scripts` folder on your machine. You can edit this script directly with any text editor:
+
+```sh
+#!/bin/sh
+  curl \
+  -v \
+  --write-out '\nNamelookup: %{time_namelookup}\nConnect: %{time_connect}\nAppconnect: %{time_appconnect}\nPretransfer: %{time_pretransfer}\nStarttransfer: %{time_starttransfer}\nTotal: %{time_total}' \
+  https://jsonplaceholder.typicode.com/posts/1
+```
+
 ## Architecture
 
 CurlDock consists of two main components:
