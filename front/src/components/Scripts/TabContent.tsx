@@ -1,6 +1,7 @@
 import { TabPanel } from "@headlessui/react";
 import VerticalSplitPane from "./VerticalSplitPane";
 import ScriptEditor from "../ScriptEditor";
+import ScriptResult from "../ScriptResult";
 
 const TabContent = ({ idx }: { idx: number }) => {
   return (
@@ -14,7 +15,9 @@ const TabContent = ({ idx }: { idx: number }) => {
             <ScriptEditor fileId={idx} />
           </div>
         }
-        right={<div className="h-full w-full"></div>}
+        right={<div className="h-full w-full overflow-auto">
+          <ScriptResult fileId={idx} />
+        </div>}
         leftOverflow={true}
         rightOverflow={true}
       />

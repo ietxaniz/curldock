@@ -29,7 +29,8 @@ impl ScriptManager {
             )));
         }
 
-        let curl_command_str = generate_curl_command(&script_details.curl_command);
+        let curl_command_str = generate_curl_command(&script_details.curl_command)
+            .map_err(|e| ScriptError::CommandGenerationError(e.to_string()))?;
 
         println!("Generated curl command: {}", curl_command_str);
 

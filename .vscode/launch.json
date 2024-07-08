@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Rust",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/debug/${workspaceFolderBasename}",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "sourceLanguages": ["rust"],
+      "env": {
+        "MODE": "DEVEL",
+        "DEVFRONTPORT": "2081",
+        "SCRIPTSFOLDER": "rest-examples",
+        "PORT": "2080"
+      },
+      "initCommands": ["type summary add --expand --summary-string \"${var}\" -x \".*\" --category Rust"],
+      "preLaunchTask": "rust: cargo build",
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}

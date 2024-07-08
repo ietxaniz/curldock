@@ -1,50 +1,53 @@
-import { useEffect, useState } from 'react';
-import { Editor, OnChange } from '@monaco-editor/react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import RequestHeaders from './RequestHeaders';
-import RequestCookies from './RequestCookies';
-import RequestOptions from './RequestOptions';
-import { HttpMethod } from '../../store/slices/curlSlice';
-import { useScriptEditorData } from './useScriptEditorData';
-import { useHeaderHeight } from '@/store/hooks/useLayout';
+import { useEffect, useState } from "react";
+import { Editor, OnChange } from "@monaco-editor/react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import RequestHeaders from "./RequestHeaders";
+import RequestCookies from "./RequestCookies";
+import RequestOptions from "./RequestOptions";
+import { HttpMethod } from "../../store/slices/curlSlice";
+import { useScriptEditorData } from "./useScriptEditorData";
+import { useHeaderHeight } from "@/store/hooks/useLayout";
+import { updateScript } from "@/api/updateScript";
 
 interface ScriptEditorProps {
   fileId: number;
 }
 
 const ScriptEditor: React.FC<ScriptEditorProps> = ({ fileId }) => {
-  const { method, setMethod, url, setUrl, headers, setHeaders, cookies, setCookies, bodyContent, setBodyContent, options, setOptions } = useScriptEditorData(fileId);
+  const {
+    method,
+    setMethod,
+    url,
+    setUrl,
+    headers,
+    setHeaders,
+    cookies,
+    setCookies,
+    bodyContent,
+    setBodyContent,
+    options,
+    setOptions,
+    saveCurrentInRedux,
+    saveCurrentInBackend,
+    callToExecuteScript,
+  } = useScriptEditorData(fileId);
   const headerHeight = useHeaderHeight();
-  const [remainingHeight, setRemainingHeight] = useState('100vh');
+  const [remainingHeight, setRemainingHeight] = useState("100vh");
 
   const handleBodyChange: OnChange = (value, _event) => {
-    setBodyContent(value || '');
+    setBodyContent(value || "");
   };
 
   const handleSend = async () => {
-    console.log('Sending request:', {
-      method,
-      url,
-      headers,
-      cookies,
-      bodyContent,
-      options,
-    });
-    // Implement actual request sending logic here
+    saveCurrentInRedux();
+    callToExecuteScript();
   };
 
   const handleSave = async () => {
-    console.log('Saving request:', {
-      method,
-      url,
-      headers,
-      cookies,
-      bodyContent,
-      options,
-    });
-    // Implement actual request sending logic here
+    saveCurrentInRedux();
+    saveCurrentInBackend();
   };
 
   useEffect(() => {
@@ -97,19 +100,17 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ fileId }) => {
               onChange={handleBodyChange}
               options={{
                 minimap: { enabled: false },
-                lineNumbers: 'on',
+                lineNumbers: "on",
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
               }}
             />
           </div>
 
-
           <div className="border border-gray-200 rounded-md p-4">
             <h3 className="mb-2 font-medium">Options</h3>
             <RequestOptions options={options} onOptionsChange={setOptions} />
           </div>
-
         </div>
       </div>
     </div>

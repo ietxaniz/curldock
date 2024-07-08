@@ -22,12 +22,13 @@ impl ScriptManager {
 
         if !full_path.exists() {
             return Err(ScriptError::IoError(std::io::Error::new(
-                std::io::ErrorKind::AlreadyExists,
+                std::io::ErrorKind::NotFound,
                 "Script does not exist",
             )));
         }
 
-        let curl_command_str = generate_curl_command(&script_details.curl_command);
+        let curl_command_str = generate_curl_command(&script_details.curl_command)
+            .map_err(|e| ScriptError::CommandGenerationError(e.to_string()))?;
 
         let mut file = fs::File::create(&full_path)?;
         file.write_all(curl_command_str.as_bytes())?;

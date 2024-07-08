@@ -12,7 +12,7 @@ const ScritpsTabPage = () => {
   return (
     <div className="w-full h-full">
       <TabGroup className="w-full h-full flex flex-col" selectedIndex={selectedIndex} onChange={setSelectedIndex}>
-        <TabList as="div" ref={tabListRef} className="flex">
+        <TabList as="div" ref={tabListRef} className="flex flex-wrap">
           {fileIds.map((id) => {
             return <TabHeader idx={id} key={id} />;
           })}
