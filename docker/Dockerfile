@@ -23,9 +23,6 @@ COPY --from=backend-builder /usr/src/app/target/release/curldock .
 # Copy the built frontend assets
 COPY --from=frontend-builder /usr/src/app/dist ./front/dist
 
-# Copy the scripts folder
-COPY rest-examples ./rest-examples
-
 # Set environment variables
 ENV MODE=PROD
 ENV SCRIPTSFOLDER=rest-examples

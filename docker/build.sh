@@ -17,11 +17,11 @@ fi
 # Set variables
 IMAGE_NAME="curldock"
 VERSION=$(git describe --tags --always --dirty)
-DOCKERHUB_USERNAME="your-dockerhub-username"  # Replace with your DockerHub username
+DOCKERHUB_USERNAME="inigoetxaniz"
 
 # Build Docker image
 echo "Building Docker image..."
-docker build -t ${IMAGE_NAME}:${VERSION} .
+docker build -t ${IMAGE_NAME}:${VERSION} -f docker/Dockerfile .
 
 # Tag the image for DockerHub
 docker tag ${IMAGE_NAME}:${VERSION} ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${VERSION}
@@ -37,9 +37,13 @@ echo "Build and push completed successfully."
 # Build for multiple architectures
 echo "Building for multiple architectures..."
 docker buildx create --use
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 \
+docker buildx build --platform linux/amd64,linux/arm64 \
   -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${VERSION} \
   -t ${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest \
+  -f docker/Dockerfile \
   --push .
+
+# Remove intermediate containers
+docker buildx rm
 
 echo "Multi-architecture build and push completed successfully."
