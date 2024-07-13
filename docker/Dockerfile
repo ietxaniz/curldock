@@ -11,6 +11,16 @@ WORKDIR /usr/src/app
 COPY front/ .
 RUN npm ci
 RUN npm run build
+RUN apk add --no-cache sed findutils && \
+    BUNDLE_FILE=$(find dist/assets -name 'index-*.js') && \
+    if [ -n "$BUNDLE_FILE" ]; then \
+        sed -i 's|https://cdn.jsdelivr.net/npm/monaco-editor@0.43.0/min/vs|/monaco-editor/min/vs|g' "$BUNDLE_FILE" && \
+        echo "Modified bundle file: $BUNDLE_FILE" ; \
+    else \
+        echo "Bundle file not found" && exit 1 ; \
+    fi && \
+    mkdir -p dist/monaco-editor/min && \
+    cp -r node_modules/monaco-editor/min/vs dist/monaco-editor/min/ ;
 
 # Final stage
 FROM alpine:3.20.1

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useGetFileIds } from "@/store/hooks/useCurl";
 import { useGetCurrentFileId, useSetCurrentFileId } from "@/store/hooks/useFileexplorer";
+import { useCurlItemSelector } from "@/store/hooks/useCurlItemSelector";
 
 export const useSelectedIndex = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -10,25 +11,23 @@ export const useSelectedIndex = () => {
   const fileIdsRef = useRef(fileIds);
   fileIdsRef.current = fileIds;
   const currentFileId = useGetCurrentFileId();
-  const setCurrentFileId = useSetCurrentFileId();
-  const setCurrentFileIdRef = useRef(setCurrentFileId);
-  setCurrentFileIdRef.current = setCurrentFileId;
   const currentFileIdIndex = fileIds.indexOf(currentFileId);
   const currentFileIdIndexRef = useRef(currentFileIdIndex);
   currentFileIdIndexRef.current = currentFileIdIndex;
+
+  const selectCurlItem = useCurlItemSelector();
 
   useEffect(() => {
     const currentFileIdIndex = currentFileIdIndexRef.current;
     if (currentFileIdIndex !== selectedIndex) {
       const fileIds = fileIdsRef.current;
       if (fileIds.length > selectedIndex && selectedIndex >= 0) {
-        const setCurrentFileId = setCurrentFileIdRef.current;
-        setCurrentFileId(fileIds[selectedIndex]);
+        selectCurlItem(fileIds[selectedIndex]);
       }
     }
-  }, [selectedIndex]);
+  }, [selectedIndex, selectCurlItem]);
 
-  useEffect(()=> {
+  useEffect(() => {
     const selectedIndex = selectedIndexRef.current;
     if (currentFileIdIndex !== selectedIndex) {
       if (currentFileIdIndex >= 0) {
@@ -37,6 +36,5 @@ export const useSelectedIndex = () => {
     }
   }, [currentFileIdIndex, currentFileId]);
 
-  return {selectedIndex, setSelectedIndex, fileIds};
+  return { selectedIndex, setSelectedIndex, fileIds };
 }
-

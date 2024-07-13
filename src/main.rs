@@ -3,6 +3,7 @@ use actix_web::{App, HttpServer};
 mod api;
 mod revproxy;
 mod config;
+mod test_endpoints;
 mod script_manager;
 mod curl_gateway;
 

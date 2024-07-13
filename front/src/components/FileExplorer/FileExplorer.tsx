@@ -1,13 +1,13 @@
-import { UncontrolledTreeEnvironment, Tree, TreeItem } from "react-complex-tree";
+import { UncontrolledTreeEnvironment, Tree, TreeItem, TreeItemIndex } from "react-complex-tree";
 import "react-complex-tree/lib/style-modern.css";
 import { PlusIcon, FolderPlusIcon } from "@heroicons/react/24/solid";
 
-import { useGetExpandedItems, useExpandItem, useCollapseItem, useRenameItem, useSetCurrentFileId, useAddFileToTree } from "../../store/hooks/useFileexplorer";
+import { useGetExpandedItems, useExpandItem, useCollapseItem, useRenameItem, useAddFileToTree } from "../../store/hooks/useFileexplorer";
+import { useCurlItemSelector } from "@/store/hooks/useCurlItemSelector";
 
 import { ItemData } from "../../store/slices/fileexplorerSlice";
 import { FileExplorerDataProvider } from "./FileExplorerDataProvider";
 import ItemTitleRenderer from "./ItemTitleRenderer";
-import { getScriptDetails } from "../../api/getScriptsDetails";
 import { useAddCurlItem } from "../../store/hooks/useCurl";
 import { createScript } from "../../api/createScript";
 import { createFolder } from "../../api/createFolder";
@@ -23,9 +23,9 @@ const FileExplorer = () => {
   const collapseItem = useCollapseItem();
   const renameItem = useRenameItem();
   const addCurlItem = useAddCurlItem();
-  const setCurrentFileId = useSetCurrentFileId();
   const addFileToTree = useAddFileToTree();
   const [currentPath, setCurrentPath] = useState("");
+  const selectCurlItem = useCurlItemSelector();
 
   const { isLoaded, treeData, key } = useLoadData();
 
@@ -61,16 +61,25 @@ const FileExplorer = () => {
     }
   };
 
-  const onFocusItem = async (item: TreeItem<ItemData>, id: string) => {
+  const onClickItem = async (item: TreeItem<ItemData>, id: string) => {
     if (item.isFolder) {
       setCurrentPath(item.data.path + (item.data.path.length > 0 ? "/" : "") + item.data.name);
       return;
     }
     setCurrentPath(item.data.path);
-    const scriptDetails = await getScriptDetails(item.data.path, item.data.name);
-    if (scriptDetails) {
-      addCurlItem({ fileId: item.data.idx, script: scriptDetails.curlCommand }, item.data.idx);
-      setCurrentFileId(item.data.idx);
+    await selectCurlItem(item);
+  };
+
+  const onSelectItems = async (itemIndexes: TreeItemIndex[], treeId: string) => {
+    if (treeId !== "tree-1") {
+      return;
+    }
+
+    for (const index of itemIndexes) {
+      const item = treeData.find(item => item.index === index);
+      if (item) {
+        await onClickItem(item, treeId);
+      }
     }
   };
 
@@ -123,7 +132,7 @@ const FileExplorer = () => {
           onExpandItem={onExpandItem}
           onCollapseItem={onCollapseItem}
           onRenameItem={onRenameItem}
-          onFocusItem={onFocusItem}
+          onSelectItems={onSelectItems}
           renderItemTitle={(props: { item: TreeItem<ItemData> }) => {
             return <ItemTitleRenderer item={props.item} id={key} provider={provider} />;
           }}

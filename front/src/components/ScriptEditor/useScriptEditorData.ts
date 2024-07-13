@@ -39,6 +39,7 @@ export const useScriptEditorData = (fileId: number) => {
   exitCallbackRef.current = () => {
     if (initialized) {
       console.log(`close ${fileId} - ${url}`);
+      const existingCurlItem = getCurlItem(fileId);
       updateCurlItem({
         fileId: fileId,
         script: {
@@ -49,6 +50,7 @@ export const useScriptEditorData = (fileId: number) => {
           data: bodyContent,
           options: options,
         },
+        result: existingCurlItem?.result,
       });
     }
   };

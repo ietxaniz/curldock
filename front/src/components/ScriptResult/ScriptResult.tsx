@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGetCurlItemByFileId } from "@/store/hooks/useCurl";
 import { Editor } from "@monaco-editor/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,14 +10,17 @@ interface ScriptResultProps {
 
 const ScriptResult: React.FC<ScriptResultProps> = ({ fileId }) => {
   const headerHeight = useHeaderHeight();
+  const getCurlItem = useGetCurlItemByFileId();
+
+  const curlItem = useMemo(() => getCurlItem(fileId), [getCurlItem, fileId]);
+  const result = curlItem?.result;
+
   const [remainingHeight, setRemainingHeight] = useState("100vh");
   useEffect(() => {
     const remInPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
     setRemainingHeight(`calc(100vh - ${headerHeight + 1 * remInPx}px)`);
   }, [headerHeight]);
 
-  const curlItem = useGetCurlItemByFileId()(fileId);
-  const result = curlItem?.result;
 
   if (!result) {
     return <div className="p-4">No result available. Execute the script to see the results.</div>;

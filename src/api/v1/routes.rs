@@ -1,6 +1,5 @@
 use super::handlers;
 use crate::api::common::handlers::not_found;
-use crate::script_manager::{self, models::ScriptDetailsCreate};
 use actix_web::{http::Method, web, HttpRequest, HttpResponse};
 
 pub async fn handle_request(
@@ -10,12 +9,8 @@ pub async fn handle_request(
     body: web::Bytes,
 ) -> HttpResponse {
     match (path, method) {
-        (p, &Method::GET) if p.starts_with("/v1/scripts") => {
-            let script_path = p
-                .trim_start_matches("/v1/scripts")
-                .trim_start_matches('/')
-                .to_string();
-            handlers::list_scripts::list_scripts(web::Path::from(script_path)).await
+        ("/v1/scripts", &Method::GET) | (_, &Method::GET) if path.starts_with("/v1/scripts/") => {
+            handlers::list_scripts::list_scripts(web::Path::from(path.to_string())).await
         }
         ("/v1/scrrecursive", &Method::GET) => {
             handlers::list_scripts_recursive::list_scripts_recursive().await

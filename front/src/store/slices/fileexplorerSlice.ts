@@ -86,7 +86,15 @@ const fileexplorerSlice = createSlice({
     addFileToTree(state, action: PayloadAction<{ name: string; path: string; isFolder: boolean }>) {
       const { name, path, isFolder } = action.payload;
       const newIndex = state.treeData.length;
-      const parentIndex = state.treeData.findIndex((item) => item.data.path === path);
+      const parentIndex = state.treeData.findIndex((item) => {
+        if (!item.isFolder) return false;
+        
+        const itemFullPath = item.data.path 
+          ? `${item.data.path}/${item.data.name}`
+          : item.data.name;
+        
+        return itemFullPath === path;
+      });
 
       state.treeData.push({
         index: newIndex,
