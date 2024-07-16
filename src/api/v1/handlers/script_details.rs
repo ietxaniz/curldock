@@ -1,7 +1,7 @@
 use crate::api::common::models::Response;
+use crate::api::common::{ApiError,ErrorKind};
 use crate::script_manager;
-use crate::script_manager::models::ScriptError;
-use actix_web::HttpResponse;
+use actix_web::{HttpResponse, ResponseError};
 
 pub async fn get_script_details(path: String) -> HttpResponse {
     let script_manager = script_manager::get_script_manager();
@@ -15,75 +15,17 @@ pub async fn get_script_details(path: String) -> HttpResponse {
         1 => ("", parts[0]),
         2 => (parts[0], parts[1]),
         _ => {
-            return HttpResponse::BadRequest().json(Response::<()>::error(
-                "InvalidPath".to_string(),
+            return ApiError::new(
+                ErrorKind::InvalidInput,
+                "get_script_details",
                 "Invalid path format".to_string(),
-            ))
+            )
+            .error_response()
         }
     };
 
     match script_manager.get_script_details(path, name) {
         Ok(script_details) => HttpResponse::Ok().json(Response::success(script_details)),
-        Err(err) => {
-            let (mut status, response) = match err {
-                ScriptError::IoError(e) => (
-                    HttpResponse::NotFound(),
-                    Response::<()>::error(
-                        "IoError".to_string(),
-                        format!("Script not found: {}", e),
-                    ),
-                ),
-                ScriptError::CurlParseError(e) => (
-                    HttpResponse::BadRequest(),
-                    Response::<()>::error(
-                        "CurlParseError".to_string(),
-                        format!("Invalid curl command in script: {}", e),
-                    ),
-                ),
-                ScriptError::ExecutionError(e) => (
-                    HttpResponse::InternalServerError(),
-                    Response::<()>::error(
-                        "ExecutionError".to_string(),
-                        format!("Error executing script: {}", e),
-                    ),
-                ),
-                ScriptError::CommandGenerationError(e) => (
-                    HttpResponse::InternalServerError(),
-                    Response::<()>::error(
-                        "CommandGenerationError".to_string(),
-                        format!("Error generating curl command: {}", e),
-                    ),
-                ),
-                ScriptError::OutputParseError(e) => (
-                    HttpResponse::InternalServerError(),
-                    Response::<()>::error(
-                        "OutputParseError".to_string(),
-                        format!("Error parsing curl output: {}", e),
-                    ),
-                ),
-                ScriptError::CommandExecutionError(e) => (
-                    HttpResponse::InternalServerError(),
-                    Response::<()>::error(
-                        "CommandExecutionError".to_string(),
-                        format!("Error during command execution: {}", e),
-                    ),
-                ),
-                ScriptError::ScriptNotFound(e) => (
-                    HttpResponse::NotFound(),
-                    Response::<()>::error(
-                        "ScriptNotFound".to_string(),
-                        format!("Script not found: {}", e),
-                    ),
-                ),
-                ScriptError::InvalidPath(e) => (
-                    HttpResponse::BadRequest(),
-                    Response::<()>::error(
-                        "InvalidPath".to_string(),
-                        format!("Invalid path: {}", e),
-                    ),
-                ),
-            };
-            status.json(response)
-        }
+        Err(e) => ApiError::from_script_manager_error("get_script_details", e).error_response(),
     }
 }

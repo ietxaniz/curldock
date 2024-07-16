@@ -1,9 +1,14 @@
-use crate::curl_gateway::models::{CurlCommand, CurlCommandResult};
-use crate::script_manager::models::ScriptError;
-use std::collections::HashMap;
+use crate::curl_gateway::errors::{CurlGatewayError, ErrorKind};
+use crate::curl_gateway::models::{CurlCommand, CurlCommandResult, StoreData};
+use crate::curl_gateway::utils::extract_data;
 use regex::Regex;
+use std::collections::HashMap;
 
-pub fn generate_curl_command_result(command: CurlCommand, stdout: &str, stderr: &str) -> Result<CurlCommandResult, ScriptError> {
+pub fn generate_curl_command_result(
+    command: CurlCommand,
+    stdout: &str,
+    stderr: &str,
+) -> Result<CurlCommandResult, CurlGatewayError> {
     let mut response_headers = HashMap::new();
     let mut cookies = HashMap::new();
     let mut status_code = 0;
@@ -39,8 +44,22 @@ pub fn generate_curl_command_result(command: CurlCommand, stdout: &str, stderr: 
     }
 
     // Parse status code, headers, and other info from stderr
-    let status_regex = Regex::new(r"< HTTP/\d+\.\d+\s+(\d+)").unwrap();
-    let header_regex = Regex::new(r"< ([^:]+):\s*(.+)").unwrap();
+    let status_regex = Regex::new(r"< HTTP/\d+\.\d+\s+(\d+)").map_err(|e| {
+        CurlGatewayError::with_source(
+            ErrorKind::Parsing,
+            "generate_curl_command_result",
+            "Failed to create status regex",
+            Box::new(e)
+        )
+    })?;
+    let header_regex = Regex::new(r"< ([^:]+):\s*(.+)").map_err(|e| {
+        CurlGatewayError::with_source(
+            ErrorKind::Parsing,
+            "generate_curl_command_result",
+            "Failed to create header regex",
+            Box::new(e)
+        )
+    })?;
 
     for line in stderr.lines() {
         if let Some(cap) = status_regex.captures(line) {
@@ -63,6 +82,44 @@ pub fn generate_curl_command_result(command: CurlCommand, stdout: &str, stderr: 
         }
     }
 
+    let mut store_data = Vec::new();
+
+    for store_curl in &command.store_curl_body {
+        match extract_data(&body, &store_curl.source) {
+            Ok(extracted_data) => {
+                store_data.push(StoreData {
+                    parameter: store_curl.destination.clone(),
+                    filename: store_curl.filename.clone(),
+                    data: extracted_data,
+                });
+            }
+            Err(e) => {
+                return Err(CurlGatewayError::with_source(
+                    ErrorKind::DataHandling,
+                    "generate_curl_command_result",
+                    format!("Failed to extract data from {}", store_curl.source),
+                    Box::new(e)
+                ));
+            }
+        }
+    }
+
+    for store_cookie in &command.store_curl_cookie {
+        if let Some(cookie_value) = cookies.get(&store_cookie.source) {
+            store_data.push(StoreData {
+                parameter: store_cookie.destination.clone(),
+                filename: store_cookie.filename.clone(),
+                data: cookie_value.clone(),
+            });
+        } else {
+            return Err(CurlGatewayError::new(
+                ErrorKind::DataHandling,
+                "generate_curl_command_result",
+                format!("Cookie '{}' not found", store_cookie.source)
+            ));
+        }
+    }
+
     Ok(CurlCommandResult {
         request: command,
         response_headers,
@@ -79,6 +136,7 @@ pub fn generate_curl_command_result(command: CurlCommand, stdout: &str, stderr: 
         time_pretransfer,
         time_starttransfer,
         time_total,
+        store_data,
     })
 }
 
@@ -96,7 +154,10 @@ fn parse_cookie(cookie_str: &str, cookies: &mut HashMap<String, String>) {
     if let Some(main_part) = parts.first() {
         let cookie_parts: Vec<&str> = main_part.splitn(2, '=').collect();
         if cookie_parts.len() == 2 {
-            cookies.insert(cookie_parts[0].trim().to_string(), cookie_parts[1].trim().to_string());
+            cookies.insert(
+                cookie_parts[0].trim().to_string(),
+                cookie_parts[1].trim().to_string(),
+            );
         }
     }
 }

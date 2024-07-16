@@ -9,11 +9,8 @@ pub async fn handle_request(
     body: web::Bytes,
 ) -> HttpResponse {
     match (path, method) {
-        ("/v1/scripts", &Method::GET) | (_, &Method::GET) if path.starts_with("/v1/scripts/") => {
-            handlers::list_scripts::list_scripts(web::Path::from(path.to_string())).await
-        }
-        ("/v1/scrrecursive", &Method::GET) => {
-            handlers::list_scripts_recursive::list_scripts_recursive().await
+        ("/v1/files", &Method::GET) => {
+            handlers::list_files_recursive::list_files_recursive().await
         }
         (p, &Method::GET) if p.starts_with("/v1/script-details") => {
             handlers::script_details::get_script_details(p.to_string()).await
@@ -27,11 +24,11 @@ pub async fn handle_request(
         ("/v1/script", &Method::PUT) => {
             handlers::update_script::update_script(web::Bytes::from(body)).await
         }
-        ("/v1/rename-script", &Method::POST) => {
-            handlers::rename_script::rename_script(web::Bytes::from(body)).await
-        }
         ("/v1/create-folder", &Method::POST) => {
             handlers::create_folder::create_folder(web::Bytes::from(body)).await
+        }
+        ("/v1/file", &Method::DELETE) => {
+            handlers::delete_data_file::delete_data_file(web::Query::from_query(path.split('?').nth(1).unwrap_or("")).unwrap()).await
         }
         _ => not_found::not_found().await,
     }

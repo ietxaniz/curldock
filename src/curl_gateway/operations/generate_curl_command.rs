@@ -1,10 +1,11 @@
-use crate::curl_gateway::models::{CurlCommand, HttpMethod, CommandExecutionError};
+use crate::curl_gateway::errors::{CurlGatewayError, ErrorKind};
+use crate::curl_gateway::models::{CurlCommand, HttpMethod};
 
-pub fn generate_curl_command(command: &CurlCommand) -> Result<String, CommandExecutionError> {
+pub fn generate_curl_command(command: &CurlCommand) -> Result<String, CurlGatewayError> {
     let mut parts = vec!["#!/bin/sh".to_string(), "curl".to_string()];
 
     // Boolean options
-    add_flag(&mut parts, command.options.verbose, "-v");
+    add_flag(&mut parts, Some(true), "-v");
     add_flag(&mut parts, command.options.insecure, "-k");
     add_flag(&mut parts, command.options.follow_redirects, "-L");
     add_flag(&mut parts, command.options.compressed, "--compressed");
@@ -12,7 +13,7 @@ pub fn generate_curl_command(command: &CurlCommand) -> Result<String, CommandExe
 
     // HTTP method
     match command.method {
-        HttpMethod::GET => {},  // GET is default, so we don't need to specify it
+        HttpMethod::GET => {} // GET is default, so we don't need to specify it
         _ => parts.push(format!("-X {}", http_method_to_string(&command.method))),
     }
 
@@ -34,7 +35,11 @@ pub fn generate_curl_command(command: &CurlCommand) -> Result<String, CommandExe
     // Numeric options
     add_option(&mut parts, &command.options.max_redirects, "--max-redirs");
     add_option(&mut parts, &command.options.timeout, "--max-time");
-    add_option(&mut parts, &command.options.connect_timeout, "--connect-timeout");
+    add_option(
+        &mut parts,
+        &command.options.connect_timeout,
+        "--connect-timeout",
+    );
     add_option(&mut parts, &command.options.retry, "--retry");
     add_option(&mut parts, &command.options.retry_delay, "--retry-delay");
     add_option(&mut parts, &command.options.max_time, "--max-time");
@@ -66,37 +71,59 @@ pub fn generate_curl_command(command: &CurlCommand) -> Result<String, CommandExe
 
     // Timing options
     let mut time_format = String::new();
-    if command.options.time_namelookup == Some(true) { time_format.push_str("\\nNamelookup: %{time_namelookup}"); }
-    if command.options.time_connect == Some(true) { time_format.push_str("\\nConnect: %{time_connect}"); }
-    if command.options.time_appconnect == Some(true) { time_format.push_str("\\nAppconnect: %{time_appconnect}"); }
-    if command.options.time_pretransfer == Some(true) { time_format.push_str("\\nPretransfer: %{time_pretransfer}"); }
-    if command.options.time_starttransfer == Some(true) { time_format.push_str("\\nStarttransfer: %{time_starttransfer}"); }
-    if command.options.time_total == Some(true) { time_format.push_str("\\nTotal: %{time_total}"); }
+    time_format.push_str("\\nNamelookup: %{time_namelookup}");
 
-    if !time_format.is_empty() {
-        parts.push(format!("--write-out '{}'", time_format));
-    }
+    time_format.push_str("\\nConnect: %{time_connect}");
+
+    time_format.push_str("\\nAppconnect: %{time_appconnect}");
+
+    time_format.push_str("\\nPretransfer: %{time_pretransfer}");
+
+    time_format.push_str("\\nStarttransfer: %{time_starttransfer}");
+
+    time_format.push_str("\\nTotal: %{time_total}");
+
+    parts.push(format!("--write-out '{}'", time_format));
 
     // URL (should be last)
+    if command.url.is_empty() {
+        return Err(CurlGatewayError::new(
+            ErrorKind::InvalidInput,
+            "generate_curl_command",
+            "URL is empty"
+        ));
+    }
     parts.push(command.url.clone());
 
-    // Join parts with line breaks and indentation, but don't add a backslash to the shebang line
-    let result = parts
-    .iter()
-    .enumerate()
-    .map(|(i, part)| {
-        if part.starts_with('#') {
-            part.to_string()
-        } else if i == parts.len() - 1 {
-            format!("  {}", part)
-        } else {
-            format!("  {} \\", part)
-        }
-    })
-    .collect::<Vec<String>>()
-    .join("\n");
+    for store_body in &command.store_curl_body {
+        parts.push(format!("# storebody {} {} {}", store_body.source, store_body.destination, store_body.filename));
+    }
+    for store_cookie in &command.store_curl_cookie {
+        parts.push(format!("# storecookie {} {} {}", store_cookie.source, store_cookie.destination, store_cookie.filename));
+    }
+    for load in &command.load_curl {
+        parts.push(format!(
+            "# loaddata {} {} {}",
+            load.filename, load.data_name, load.env_variable
+        ));
+    }
 
-Ok(result)
+    let result = parts
+        .iter()
+        .enumerate()
+        .map(|(i, part)| {
+            if part.starts_with('#') {
+                part.to_string()
+            } else if i == parts.len() - 1 || (i + 1 < parts.len() && parts[i + 1].starts_with('#')) {
+                format!("  {}", part)
+            } else {
+                format!("  {} \\", part)
+            }
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    Ok(result)
 }
 
 fn http_method_to_string(method: &HttpMethod) -> &'static str {

@@ -1,29 +1,38 @@
-use std::fs;
-use std::path::PathBuf;
-use crate::script_manager::models::ScriptError;
+use crate::curl_gateway::models::CurlCommandResult;
+use crate::curl_gateway::operations::{execute_curl_command, parse_curl_command};
+use crate::script_manager::errors::{ErrorKind, ScriptManagerError};
 use crate::script_manager::ScriptManager;
-use crate::curl_gateway::operations::{parse_curl_command, execute_curl_command};
-use crate::curl_gateway::models::{CurlCommand, CurlCommandResult, CommandExecutionError};
+use std::fs;
 
 impl ScriptManager {
-    pub fn execute_script(&self, path: &str, name: &str) -> Result<CurlCommandResult, ScriptError> {
-        let full_path: PathBuf = self.scripts_dir().join(path).join(name);
-        
+    pub fn execute_script(
+        &self,
+        path: &str,
+        name: &str,
+    ) -> Result<CurlCommandResult, ScriptManagerError> {
+        let full_path = self.get_full_path(path)?.join(name);
+
         if !full_path.exists() {
-            return Err(ScriptError::ScriptNotFound(format!("Script not found at path: {}", full_path.display())));
+            return Err(ScriptManagerError::new(
+                ErrorKind::ScriptNotFound,
+                "execute_script",
+                format!("Script not found at path: {}", full_path.display()),
+            ));
         }
 
-        let content = fs::read_to_string(&full_path)
-            .map_err(ScriptError::IoError)?;
+        let content = fs::read_to_string(&full_path).map_err(|e| {
+            ScriptManagerError::with_source(
+                ErrorKind::Io,
+                "execute_script",
+                "Failed to read script file",
+                Box::new(e),
+            )
+        })?;
 
-        let curl_command: CurlCommand = parse_curl_command(&content)
-            .map_err(ScriptError::CurlParseError)?;
+        let curl_command = parse_curl_command(&content)
+            .map_err(|e| ScriptManagerError::from_curl_gateway_error("parse_curl_command", e))?;
 
         execute_curl_command(curl_command)
-            .map_err(|e| match e {
-                CommandExecutionError::ExecutionError(msg) => ScriptError::ExecutionError(msg),
-                CommandExecutionError::CommandGenerationError(msg) => ScriptError::CommandGenerationError(msg),
-                CommandExecutionError::OutputParseError(msg) => ScriptError::OutputParseError(msg),
-            })
+            .map_err(|e| ScriptManagerError::from_curl_gateway_error("execute_curl_command", e))
     }
 }

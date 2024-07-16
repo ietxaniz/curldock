@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use thiserror::Error;
+use std::fmt;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CurlCommand {
@@ -10,6 +10,35 @@ pub struct CurlCommand {
     pub data: Option<String>,
     pub cookies: Vec<(String, String)>,
     pub options: CurlOptions,
+    #[serde(rename = "storeCurlBody")]
+    pub store_curl_body: Vec<StoreCurlBody>,
+    #[serde(rename = "storeCurlCookie")]
+    pub store_curl_cookie: Vec<StoreCurlCookie>,
+    #[serde(rename = "loadCurl")]
+    pub load_curl: Vec<LoadCurl>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StoreCurlBody {
+  pub source: String,
+  pub destination: String,
+  pub filename: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StoreCurlCookie {
+    pub source: String,
+    pub destination: String,
+    pub filename: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LoadCurl {
+    pub filename: String,
+    #[serde(rename = "fileName")]
+    pub data_name: String,
+    #[serde(rename = "envVariable")]
+    pub env_variable: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -27,7 +56,6 @@ pub enum HttpMethod {
 /// should be set using the `headers` field in the `CurlCommand` struct.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CurlOptions {
-    pub verbose: Option<bool>,
     pub insecure: Option<bool>,
     #[serde(rename = "followRedirects")]
     pub follow_redirects: Option<bool>,
@@ -60,29 +88,6 @@ pub struct CurlOptions {
     pub max_time: Option<u32>,
     #[serde(rename = "rateLimit")]
     pub rate_limit: Option<u32>,
-    #[serde(rename = "timeNamelookup")]
-    pub time_namelookup: Option<bool>,
-    #[serde(rename = "timeConnect")]
-    pub time_connect: Option<bool>,
-    #[serde(rename = "timeAppconnect")]
-    pub time_appconnect: Option<bool>,
-    #[serde(rename = "timePretransfer")]
-    pub time_pretransfer: Option<bool>,
-    #[serde(rename = "timeStarttransfer")]
-    pub time_starttransfer: Option<bool>,
-    #[serde(rename = "timeTotal")]
-    pub time_total: Option<bool>,
-}
-
-#[derive(Error, Debug)]
-pub enum ParseError {
-    #[error("Missing URL in curl command")]
-    MissingUrl,
-    #[error("Invalid HTTP method: {0}")]
-    InvalidMethod(String),
-    #[error("No curl command found in script")]
-    MissingCurlCommand,
-    // Add other error types as needed
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -114,14 +119,38 @@ pub struct CurlCommandResult {
     pub time_starttransfer: Option<u32>,
     #[serde(rename = "timeTotal")]
     pub time_total: Option<u32>,
+    #[serde(rename = "storeData")]
+    pub store_data: Vec<StoreData>,
 }
 
-#[derive(Error, Debug)]
-pub enum CommandExecutionError {
-    #[error("Failed to generate curl command: {0}")]
-    CommandGenerationError(String),
-    #[error("Failed to execute curl command: {0}")]
-    ExecutionError(String),
-    #[error("Failed to parse curl output: {0}")]
-    OutputParseError(String),
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StoreData {
+    pub parameter: String,
+    pub filename: String,
+    pub data: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct DataFileDetails {
+    pub name: String,
+    pub path: String,
+    pub content: HashMap<String, String>,
+    #[serde(rename = "createdAt")]
+    pub created_at: u64,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: u64,
+}
+
+impl fmt::Display for HttpMethod {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            HttpMethod::GET => write!(f, "GET"),
+            HttpMethod::POST => write!(f, "POST"),
+            HttpMethod::PUT => write!(f, "PUT"),
+            HttpMethod::DELETE => write!(f, "DELETE"),
+            HttpMethod::PATCH => write!(f, "PATCH"),
+            HttpMethod::HEAD => write!(f, "HEAD"),
+            HttpMethod::OPTIONS => write!(f, "OPTIONS"),
+        }
+    }
 }

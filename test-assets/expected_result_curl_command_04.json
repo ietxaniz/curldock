@@ -1,0 +1,36 @@
+{
+  "body": "{\"message\":\"!dlroW ,olleH\",\"received\":{\"message\":\"Hello, World!\",\"message2\":\"akilote\",\"message3\":\"pain maker\"}}",
+  "contentType": "application/json",
+  "cookies": {
+    "auth": "eikoocelpmaxe"
+  },
+  "effectiveUrl": null,
+  "redirectCount": null,
+  "responseHeaders": {
+    "content-type": "application/json",
+    "set-cookie": "auth=eikoocelpmaxe"
+  },
+  "statusCode": 201,
+  "storeData": [
+    {
+      "data": "!dlroW ,olleH",
+      "filename": "./test-assets/tmp/data.json",
+      "parameter": "message"
+    },
+    {
+      "data": "akilote",
+      "filename": "./test-assets/tmp/data.json",
+      "parameter": "message2"
+    },
+    {
+      "data": "pain maker",
+      "filename": "./test-assets/tmp/data-1.json",
+      "parameter": "message3"
+    },
+    {
+      "data": "eikoocelpmaxe",
+      "filename": "./test-assets/tmp/data.json",
+      "parameter": "auth"
+    }
+  ]
+}

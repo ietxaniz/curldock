@@ -1,0 +1,26 @@
+{
+  "body": "{\"message\":\"!dlroW ,olleH\",\"received\":{\"message\":\"Hello, World!\"}}",
+  "contentType": "application/json",
+  "cookies": {
+    "auth": "eikoocelpmaxe"
+  },
+  "effectiveUrl": null,
+  "redirectCount": null,
+  "responseHeaders": {
+    "content-type": "application/json",
+    "set-cookie": "auth=eikoocelpmaxe"
+  },
+  "statusCode": 201,
+  "storeData": [
+    {
+      "data": "!dlroW ,olleH",
+      "filename": "./test-assets/tmp/data.json",
+      "parameter": "message"
+    },
+    {
+      "data": "eikoocelpmaxe",
+      "filename": "./test-assets/tmp/data.json",
+      "parameter": "auth"
+    }
+  ]
+}
