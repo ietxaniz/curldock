@@ -20,10 +20,7 @@ pub enum ErrorKind {
     Parsing,
     Execution,
     DataHandling,
-    Network,
     InvalidInput,
-    UnexpectedResponse,
-    InternalError,
 }
 
 impl fmt::Display for ErrorKind {
@@ -32,10 +29,7 @@ impl fmt::Display for ErrorKind {
             ErrorKind::Parsing => write!(f, "Parsing"),
             ErrorKind::Execution => write!(f, "Execution"),
             ErrorKind::DataHandling => write!(f, "Data handling"),
-            ErrorKind::Network => write!(f, "Network"),
             ErrorKind::InvalidInput => write!(f, "Invalid input"),
-            ErrorKind::UnexpectedResponse => write!(f, "Unexpected response"),
-            ErrorKind::InternalError => write!(f, "Internal error"),
         }
     }
 }

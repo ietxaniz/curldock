@@ -2,26 +2,27 @@ use std::fmt;
 use thiserror::Error;
 use actix_web::{HttpResponse, ResponseError};
 use crate::script_manager::errors::ScriptManagerError;
+use serde::Serialize;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Serialize)]
 pub enum ApiError {
     #[error("{kind} error in {operation}: {message}")]
     OperationError {
         kind: ErrorKind,
         operation: String,
         message: String,
+        #[serde(skip_serializing)]
         #[source]
         source: Option<Box<dyn std::error::Error + Send + Sync>>,
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum ErrorKind {
     Io,
     NotFound,
     CurlGateway,
     InvalidInput,
-    InternalError,
 }
 
 impl fmt::Display for ErrorKind {
@@ -31,7 +32,6 @@ impl fmt::Display for ErrorKind {
             ErrorKind::NotFound => write!(f, "Not found"),
             ErrorKind::CurlGateway => write!(f, "Curl gateway"),
             ErrorKind::InvalidInput => write!(f, "Invalid input"),
-            ErrorKind::InternalError => write!(f, "Internal error"),
         }
     }
 }
@@ -46,19 +46,6 @@ impl ApiError {
         }
     }
 
-    pub fn with_source(
-        kind: ErrorKind,
-        operation: impl Into<String>,
-        message: impl Into<String>,
-        source: Box<dyn std::error::Error + Send + Sync>,
-    ) -> Self {
-        ApiError::OperationError {
-            kind,
-            operation: operation.into(),
-            message: message.into(),
-            source: Some(source),
-        }
-    }
 
     pub fn from_script_manager_error(operation: impl Into<String>, e: ScriptManagerError) -> Self {
         ApiError::OperationError {
@@ -68,7 +55,6 @@ impl ApiError {
                     crate::script_manager::errors::ErrorKind::ScriptNotFound => ErrorKind::NotFound,
                     crate::script_manager::errors::ErrorKind::CurlGateway => ErrorKind::CurlGateway,
                     crate::script_manager::errors::ErrorKind::InvalidInput => ErrorKind::InvalidInput,
-                    crate::script_manager::errors::ErrorKind::InternalError => ErrorKind::InternalError,
                 },
             },
             operation: operation.into(),
@@ -87,7 +73,6 @@ impl ResponseError for ApiError {
                     ErrorKind::NotFound => actix_web::http::StatusCode::NOT_FOUND,
                     ErrorKind::CurlGateway => actix_web::http::StatusCode::BAD_GATEWAY,
                     ErrorKind::InvalidInput => actix_web::http::StatusCode::BAD_REQUEST,
-                    ErrorKind::InternalError => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
                 };
 
                 HttpResponse::build(status_code).json(serde_json::json!({

@@ -132,8 +132,8 @@ pub struct StoreData {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DataFileDetails {
-    pub name: String,
-    pub path: String,
+  #[serde(rename = "fullName")]
+    pub full_name: String,
     pub content: HashMap<String, String>,
     #[serde(rename = "createdAt")]
     pub created_at: u64,

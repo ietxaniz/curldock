@@ -7,15 +7,13 @@ use crate::script_manager::ScriptManager;
 impl ScriptManager {
     pub fn rename_script(
         self: &Arc<Self>, 
-        old_path: &str, 
-        old_name: &str, 
-        new_path: &str, 
-        new_name: &str
+        old_full_name: &str, 
+        new_full_name: &str
     ) -> Result<ScriptDetails, ScriptManagerError> {
         let _lock = self.lock();
         
-        let old_full_path = self.get_full_path(old_path)?.join(old_name);
-        let new_full_path = self.get_full_path(new_path)?.join(new_name);
+        let old_full_path = self.get_full_path(old_full_name)?;
+        let new_full_path = self.get_full_path(new_full_name)?;
         
         if !old_full_path.exists() {
             return Err(ScriptManagerError::new(
@@ -29,7 +27,7 @@ impl ScriptManager {
             return Err(ScriptManagerError::new(
                 ErrorKind::Io,
                 "rename_script",
-                format!("A script with the name '{}' already exists in the destination path", new_name),
+                format!("A script with the name '{}' already exists", new_full_name),
             ));
         }
         
@@ -51,7 +49,7 @@ impl ScriptManager {
         ))?;
         
         // After renaming, get the updated details
-        self.get_script_details(new_path, new_name)
+        self.get_script_details(new_full_name)
             .map_err(|e| ScriptManagerError::with_source(
                 ErrorKind::Io,
                 "rename_script",

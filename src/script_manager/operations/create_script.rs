@@ -15,7 +15,7 @@ impl ScriptManager {
         let _lock = self.lock();
 
 
-        let full_path = self.get_full_path(&script_details.path)?.join(&script_details.name);
+        let full_path = self.get_full_path(&script_details.full_name)?;
 
         println!("Creating script at: {:?}", full_path);
 
@@ -56,8 +56,7 @@ impl ScriptManager {
             ))?;
 
         Ok(ScriptDetails {
-            name: script_details.name,
-            path: script_details.path,
+            full_name: script_details.full_name,
             curl_command: script_details.curl_command,
             created_at: metadata
                 .created()

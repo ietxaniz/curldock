@@ -6,18 +6,18 @@ use std::fs;
 use std::time::UNIX_EPOCH;
 
 impl ScriptManager {
-    pub fn get_script_details(&self, path: &str, name: &str) -> Result<ScriptDetails, ScriptManagerError> {
-        let full_path = self.get_full_path(path)?.join(name);
+    pub fn get_script_details(&self, full_path: &str) -> Result<ScriptDetails, ScriptManagerError> {
+        let local_full_path = self.get_full_path(full_path)?;
 
-        if !full_path.exists() {
+        if !local_full_path.exists() {
             return Err(ScriptManagerError::new(
                 ErrorKind::ScriptNotFound,
                 "get_script_details",
-                format!("Script not found: {}", full_path.display()),
+                format!("Script not found: {}", local_full_path.display()),
             ));
         }
 
-        let metadata = fs::metadata(&full_path)
+        let metadata = fs::metadata(&local_full_path)
             .map_err(|e| ScriptManagerError::with_source(
                 ErrorKind::Io,
                 "get_script_details",
@@ -25,7 +25,7 @@ impl ScriptManager {
                 Box::new(e),
             ))?;
 
-        let content = fs::read_to_string(&full_path)
+        let content = fs::read_to_string(&local_full_path)
             .map_err(|e| ScriptManagerError::with_source(
                 ErrorKind::Io,
                 "get_script_details",
@@ -46,8 +46,7 @@ impl ScriptManager {
             .unwrap_or(0);
 
         Ok(ScriptDetails {
-            name: name.to_string(),
-            path: path.to_string(),
+            full_name: full_path.to_string(),
             curl_command,
             created_at,
             updated_at,

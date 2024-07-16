@@ -22,7 +22,6 @@ pub enum ErrorKind {
     ScriptNotFound,
     CurlGateway,
     InvalidInput,
-    InternalError,
 }
 
 impl fmt::Display for ErrorKind {
@@ -32,7 +31,6 @@ impl fmt::Display for ErrorKind {
             ErrorKind::ScriptNotFound => write!(f, "Script not found"),
             ErrorKind::CurlGateway => write!(f, "Curl gateway"),
             ErrorKind::InvalidInput => write!(f, "Invalid input"),
-            ErrorKind::InternalError => write!(f, "Internal error"),
         }
     }
 }

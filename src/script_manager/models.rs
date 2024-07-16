@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use crate::curl_gateway::models::CurlCommand;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub enum FileType {
@@ -28,8 +28,8 @@ pub struct FileList {
 
 #[derive(Serialize, Deserialize)]
 pub struct ScriptDetails {
-    pub name: String,
-    pub path: String,
+    #[serde(rename = "fullName")]
+    pub full_name: String,
     #[serde(rename = "curlCommand")]
     pub curl_command: CurlCommand,
     #[serde(rename = "createdAt")]
@@ -40,8 +40,8 @@ pub struct ScriptDetails {
 
 #[derive(Serialize, Deserialize)]
 pub struct ScriptDetailsCreate {
-    pub name: String,
-    pub path: String,
+    #[serde(rename = "fullName")]
+    pub full_name: String,
     #[serde(rename = "curlCommand")]
     pub curl_command: CurlCommand,
 }

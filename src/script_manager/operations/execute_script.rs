@@ -7,10 +7,9 @@ use std::fs;
 impl ScriptManager {
     pub fn execute_script(
         &self,
-        path: &str,
-        name: &str,
+        full_path: &str,
     ) -> Result<CurlCommandResult, ScriptManagerError> {
-        let full_path = self.get_full_path(path)?.join(name);
+        let full_path = self.get_full_path(full_path)?;
 
         if !full_path.exists() {
             return Err(ScriptManagerError::new(
