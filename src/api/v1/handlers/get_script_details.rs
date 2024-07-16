@@ -1,9 +1,10 @@
-use crate::api::common::models::{Response, PathQuery};
+use crate::api::common::models::{decode_query, PathQuery, Response};
 use crate::api::common::ApiError;
 use crate::script_manager;
-use actix_web::{HttpResponse, ResponseError, web};
+use actix_web::{HttpResponse, ResponseError};
 
-pub async fn get_script_details(query: Result<web::Query<PathQuery>, HttpResponse>) -> HttpResponse {
+pub async fn get_script_details(path:&str) -> HttpResponse {
+  let query = decode_query::<PathQuery>(path);
     match query {
         Ok(query) => {
             let script_manager = script_manager::get_script_manager();
