@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useGetLoaded, useSetLoaded, useSetTreeData, useGetTreeData } from "@/store/hooks/useFileexplorer";
-import { getScriptList } from "@/api/getScriptList";
+import { listAllFiles } from "@/api/endpoints/list";
 import { TreeItemIndex } from "react-complex-tree";
+import { FileType, getPathNameFromFullName } from "@/api/types";
 
 export const useLoadData = () => {
   const isLoaded = useGetLoaded();
@@ -14,7 +15,9 @@ export const useLoadData = () => {
   useEffect(() => {
     const initialize = async () => {
       if (!isLoaded) {
-        const serverData = await getScriptList();
+        const listAllFilesResponse = await listAllFiles();
+        console.log(listAllFilesResponse);
+        const serverData = listAllFilesResponse.files;
         const folders: { [key: string]: number } = {};
         folders[""] = 0;
         const initialData = [
@@ -22,29 +25,29 @@ export const useLoadData = () => {
             index: "root" as TreeItemIndex,
             isFolder: true,
             children: [] as number[],
-            data: { name: "Root", editing: false, idx: 0, path: "" },
+            data: { name: "Root", editing: false, idx: 0, path: "", itemType: FileType.Data },
           },
         ];
         for (let i = 0; i < serverData.length; i++) {
           const idx = i + 1;
-          const parentidx = folders[serverData[i].path];
+          const { path } = getPathNameFromFullName(serverData[i].path);
+          const parentidx = folders[path];
           initialData[parentidx].children.push(idx);
           if (serverData[i].isFolder) {
-            const leftPathPath = serverData[i].path.length > 0 ? serverData[i].path + "/" : "";
-            const path = leftPathPath + serverData[i].name;
+            const fullPath = serverData[i].path;
             initialData.push({
               index: idx,
               children: [] as number[],
               isFolder: true,
-              data: { name: serverData[i].name, editing: false, idx: idx, path: leftPathPath },
+              data: { name: serverData[i].name, editing: false, idx: idx, path, itemType: serverData[i].fileType },
             });
-            folders[path] = idx;
+            folders[fullPath] = idx;
           } else {
             initialData.push({
               index: idx,
               children: [] as number[],
               isFolder: false,
-              data: { name: serverData[i].name, editing: false, idx: idx, path: serverData[i].path },
+              data: { name: serverData[i].name, editing: false, idx: idx, path, itemType: serverData[i].fileType },
             });
           }
         }

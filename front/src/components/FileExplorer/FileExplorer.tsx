@@ -9,13 +9,14 @@ import { ItemData } from "../../store/slices/fileexplorerSlice";
 import { FileExplorerDataProvider } from "./FileExplorerDataProvider";
 import ItemTitleRenderer from "./ItemTitleRenderer";
 import { useAddCurlItem } from "../../store/hooks/useCurl";
-import { createScript } from "../../api/createScript";
-import { createFolder } from "../../api/createFolder";
-import { HttpMethod } from "@/api/base";
+import { createScript } from "@/api/endpoints/script";
+import { createFolder } from "@/api/createFolder";
+import { HttpMethod, getPathNameFromFullName } from "@/api/types";
 import { renameScript } from "../../api/renameScript";
 
 import { useLoadData } from "./useLoadData";
 import { useState } from "react";
+import { FileType } from "@/api/types";
 
 const FileExplorer = () => {
   const expandedItems = useGetExpandedItems();
@@ -76,7 +77,7 @@ const FileExplorer = () => {
     }
 
     for (const index of itemIndexes) {
-      const item = treeData.find(item => item.index === index);
+      const item = treeData.find((item) => item.index === index);
       if (item) {
         await onClickItem(item, treeId);
       }
@@ -86,14 +87,27 @@ const FileExplorer = () => {
   const handleCreateFile = async () => {
     const name = prompt("Enter the name of the new file:");
     if (name) {
+      let fullName = name;
+      if (currentPath.length > 0) {
+        fullName = currentPath + "/" + name;
+      }
       const result = await createScript({
-        name,
-        path: currentPath,
-        curlCommand: { method: HttpMethod.GET, url: "http://localhost/", headers: [], cookies: [], options: {} },
+        fullName,
+        curlCommand: {
+          method: HttpMethod.GET,
+          url: "http://localhost/",
+          headers: [],
+          cookies: [],
+          options: {},
+          storeCurlBody: [],
+          storeCurlCookie: [],
+          loadCurl: [],
+        },
       });
       if (result) {
-        addFileToTree(result.name, result.path, false);
-        addCurlItem({ fileId: treeData.length, script: result.curlCommand }, treeData.length);
+        const { path, name } = getPathNameFromFullName(result.fullName);
+        addFileToTree(name, path, FileType.Script);
+        // TODO: We will add curl item later. addCurlItem({ fileId: treeData.length, script: result.curlCommand }, treeData.length);
       }
     }
   };
@@ -104,7 +118,7 @@ const FileExplorer = () => {
       const path = currentPath + (currentPath ? "/" : "") + name;
       const result = await createFolder({ path });
       if (result) {
-        addFileToTree(name, currentPath, true);
+        addFileToTree(name, currentPath, FileType.Folder);
       }
     }
   };

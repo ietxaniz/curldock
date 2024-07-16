@@ -1,6 +1,6 @@
 pub mod create_folder;
 pub mod create_script;
-pub mod delete_data_file;
+pub mod delete_asset;
 pub mod execute_script;
 pub mod get_script_details;
 pub mod list_files_recursive;
@@ -13,7 +13,7 @@ pub mod update_script;
 
 pub use create_folder::create_folder;
 pub use create_script::create_script;
-pub use delete_data_file::delete_data_file;
+pub use delete_asset::delete_asset;
 pub use execute_script::execute_script;
 pub use get_script_details::get_script_details;
 pub use list_files_recursive::list_files_recursive;

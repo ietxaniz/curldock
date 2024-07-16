@@ -12,7 +12,7 @@ pub async fn handle_request(
         ("/v1/data", &Method::GET) => handlers::load_data_file(path).await,
         ("/v1/data", &Method::POST) => handlers::store_data_file(body).await,
         ("/v1/data", &Method::PUT) => handlers::update_data_file(body).await,
-        ("/v1/data", &Method::DELETE) => handlers::delete_data_file(path).await,
+        ("/v1/asset", &Method::DELETE) => handlers::delete_asset(path).await,
         ("/v1/data/rename", &Method::POST) => handlers::rename_file(body).await,
         ("/v1/execute", &Method::POST) => handlers::execute_script(path).await,
         ("/v1/folder", &Method::POST) => handlers::create_folder(body).await,

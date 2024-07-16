@@ -220,35 +220,46 @@ impl ScriptManager {
         })
     }
 
-    pub fn delete_data_file(self: &Arc<Self>, path: &str) -> Result<(), ScriptManagerError> {
-        let _lock = self.lock();
-
-        let full_path = self.get_full_path(path).map_err(|e| {
-            ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "delete_data_file",
-                "Failed to get full path",
-                Box::new(e),
-            )
-        })?;
-
-        if !full_path.exists() {
-            return Err(ScriptManagerError::new(
-                ErrorKind::Io,
-                "delete_data_file",
-                "Data file not found",
-            ));
-        }
-
-        fs::remove_file(full_path).map_err(|e| {
-            ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "delete_data_file",
-                "Failed to delete data file",
-                Box::new(e),
-            )
-        })
-    }
+    pub fn delete_asset(self: &Arc<Self>, path: &str) -> Result<(), ScriptManagerError> {
+      let _lock = self.lock();
+  
+      let full_path = self.get_full_path(path).map_err(|e| {
+          ScriptManagerError::with_source(
+              ErrorKind::Io,
+              "delete_asset",
+              "Failed to get full path",
+              Box::new(e),
+          )
+      })?;
+  
+      if !full_path.exists() {
+          return Err(ScriptManagerError::new(
+              ErrorKind::Io,
+              "delete_asset",
+              "Asset not found",
+          ));
+      }
+  
+      if full_path.is_dir() {
+          fs::remove_dir_all(&full_path).map_err(|e| {
+              ScriptManagerError::with_source(
+                  ErrorKind::Io,
+                  "delete_asset",
+                  "Failed to delete directory",
+                  Box::new(e),
+              )
+          })
+      } else {
+          fs::remove_file(&full_path).map_err(|e| {
+              ScriptManagerError::with_source(
+                  ErrorKind::Io,
+                  "delete_asset",
+                  "Failed to delete file",
+                  Box::new(e),
+              )
+          })
+      }
+  }
 
     pub fn rename_file(
         self: &Arc<Self>,

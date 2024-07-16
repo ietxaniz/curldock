@@ -23,6 +23,7 @@ pub enum ErrorKind {
     NotFound,
     CurlGateway,
     InvalidInput,
+    Internal,
 }
 
 impl fmt::Display for ErrorKind {
@@ -32,6 +33,7 @@ impl fmt::Display for ErrorKind {
             ErrorKind::NotFound => write!(f, "Not found"),
             ErrorKind::CurlGateway => write!(f, "Curl gateway"),
             ErrorKind::InvalidInput => write!(f, "Invalid input"),
+            ErrorKind::Internal => write!(f, "Internal error"),
         }
     }
 }
@@ -55,6 +57,7 @@ impl ApiError {
                     crate::script_manager::errors::ErrorKind::ScriptNotFound => ErrorKind::NotFound,
                     crate::script_manager::errors::ErrorKind::CurlGateway => ErrorKind::CurlGateway,
                     crate::script_manager::errors::ErrorKind::InvalidInput => ErrorKind::InvalidInput,
+                    crate::script_manager::errors::ErrorKind::Internal => ErrorKind::Internal,
                 },
             },
             operation: operation.into(),
@@ -73,6 +76,7 @@ impl ResponseError for ApiError {
                     ErrorKind::NotFound => actix_web::http::StatusCode::NOT_FOUND,
                     ErrorKind::CurlGateway => actix_web::http::StatusCode::BAD_GATEWAY,
                     ErrorKind::InvalidInput => actix_web::http::StatusCode::BAD_REQUEST,
+                    ErrorKind::Internal => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
                 };
 
                 HttpResponse::build(status_code).json(serde_json::json!({

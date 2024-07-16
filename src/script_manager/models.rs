@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub enum FileType {
     Script,
     Data,
+    Folder,
+    Unknown,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -17,6 +19,7 @@ pub struct FileInfo {
     #[serde(rename = "isFolder")]
     pub is_folder: bool,
     pub path: String,
+    #[serde(rename = "fileType")]
     pub file_type: FileType,
 }
 

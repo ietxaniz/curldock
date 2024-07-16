@@ -11,6 +11,7 @@ import {
   setCurrentFileId,
   addFileToTree,
 } from "../slices/fileexplorerSlice";
+import { FileType } from "@/api/types";
 
 export const useGetEditingItem = (): string => {
   return useAppSelector((state) => state.fileexplorer.editingItem);
@@ -80,9 +81,9 @@ export const useSetCurrentFileId = () => {
   return (id: number) => dispatch(setCurrentFileId(id));
 };
 
-export const useAddFileToTree = (): ((name: string, path: string, isFolder: boolean) => void) => {
+export const useAddFileToTree = (): ((name: string, path: string, itemType: FileType) => void) => {
   const dispatch = useAppDispatch();
-  return (name: string, path: string, isFolder: boolean) => {
-    dispatch(addFileToTree({ name, path, isFolder }));
+  return (name: string, path: string, itemType: FileType) => {
+    dispatch(addFileToTree({ name, path, itemType }));
   };
 };

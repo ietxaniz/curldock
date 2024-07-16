@@ -1,11 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { TreeItem } from "react-complex-tree";
 
+import { FileType } from "@/api/types";
+
 export interface ItemData {
   name: string;
   editing: boolean;
   idx: number;
   path: string;
+  itemType: FileType;
 }
 
 export interface FileexplorerState {
@@ -59,7 +62,7 @@ const fileexplorerSlice = createSlice({
         });
 
         // If it's a folder, update paths of all children
-        if (item.isFolder) {
+        if (item.data.itemType === FileType.Folder) {
           const oldPath = item.data.path + "/" + item.data.name;
           const newPath = item.data.path + "/" + newName;
           state.treeData = state.treeData.map((treeItem) => {
@@ -83,24 +86,24 @@ const fileexplorerSlice = createSlice({
     setCurrentFileId(state, action: PayloadAction<number>) {
       state.currentFileId = action.payload;
     },
-    addFileToTree(state, action: PayloadAction<{ name: string; path: string; isFolder: boolean }>) {
-      const { name, path, isFolder } = action.payload;
+    addFileToTree(state, action: PayloadAction<{ name: string; path: string; itemType: FileType }>) {
+      const { name, path, itemType } = action.payload;
       const newIndex = state.treeData.length;
       const parentIndex = state.treeData.findIndex((item) => {
-        if (!item.isFolder) return false;
-        
+        if (item.data.itemType !== FileType.Folder) return false;
+
         const itemFullPath = item.data.path 
           ? `${item.data.path}/${item.data.name}`
           : item.data.name;
-        
+
         return itemFullPath === path;
       });
 
       state.treeData.push({
         index: newIndex,
         children: [],
-        isFolder,
-        data: { name, editing: false, idx: newIndex, path },
+        isFolder: itemType === FileType.Folder,
+        data: { name, editing: false, idx: newIndex, path, itemType },
       });
 
       if (parentIndex !== -1 && state.treeData[parentIndex].children) {

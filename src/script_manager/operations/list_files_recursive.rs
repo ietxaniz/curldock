@@ -6,11 +6,12 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::UNIX_EPOCH;
 use crate::curl_gateway::operations::parse_curl_command;
+use serde_json::from_str as json_from_str;
 
 impl ScriptManager {
     pub fn list_files_recursive(self: &Arc<Self>) -> Result<FileList, ScriptManagerError> {
         let base_path = self.scripts_dir();
-        let files = self.collect_files_recursive(base_path, "")?;
+        let files = self.collect_files_recursive(&base_path, &base_path)?;
 
         Ok(FileList {
             path: "".to_string(),
@@ -21,22 +22,33 @@ impl ScriptManager {
     fn collect_files_recursive(
         &self,
         dir: &Path,
-        relative_path: &str,
+        base_path: &Path,
     ) -> Result<Vec<FileInfo>, ScriptManagerError> {
         let mut files = Vec::new();
-
-        for entry in fs::read_dir(dir).map_err(|e| ScriptManagerError::with_source(
-            ErrorKind::Io,
-            "collect_files_recursive",
-            "Failed to read directory",
-            Box::new(e),
-        ))? {
-            let entry = entry.map_err(|e| ScriptManagerError::with_source(
+        let mut entries: Vec<_> = fs::read_dir(dir)
+            .map_err(|e| ScriptManagerError::with_source(
                 ErrorKind::Io,
                 "collect_files_recursive",
-                "Failed to read directory entry",
+                "Failed to read directory",
+                Box::new(e),
+            ))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| ScriptManagerError::with_source(
+                ErrorKind::Io,
+                "collect_files_recursive",
+                "Failed to collect directory entries",
                 Box::new(e),
             ))?;
+
+        // Sort entries: directories first, then files
+        entries.sort_by(|a, b| {
+            let a_metadata = a.metadata().unwrap();
+            let b_metadata = b.metadata().unwrap();
+            b_metadata.is_dir().cmp(&a_metadata.is_dir())
+                .then(a.file_name().cmp(&b.file_name()))
+        });
+
+        for entry in entries {
             let path = entry.path();
             let metadata = fs::metadata(&path).map_err(|e| ScriptManagerError::with_source(
                 ErrorKind::Io,
@@ -47,25 +59,29 @@ impl ScriptManager {
             let is_folder = metadata.is_dir();
             let file_name = path.file_name().unwrap().to_string_lossy().into_owned();
 
-            let new_relative_path = if relative_path.is_empty() {
-                file_name.clone()
-            } else {
-                format!("{}/{}", relative_path, file_name)
-            };
+            let relative_path = path.strip_prefix(base_path)
+                .map_err(|e| ScriptManagerError::with_source(
+                    ErrorKind::Internal,
+                    "collect_files_recursive",
+                    "Failed to strip base path",
+                    Box::new(e),
+                ))?
+                .to_string_lossy()
+                .into_owned();
 
             let file_type = if is_folder {
-                FileType::Data // Folders are considered as data
+                FileType::Folder
             } else {
-                // Try to parse as a curl command to determine if it's a script
-                let content = fs::read_to_string(&path).map_err(|e| ScriptManagerError::with_source(
-                    ErrorKind::Io,
-                    "collect_files_recursive",
-                    "Failed to read file",
-                    Box::new(e),
-                ))?;
-                match parse_curl_command(&content) {
-                    Ok(_) => FileType::Script,
-                    Err(_) => FileType::Data,
+                if let Ok(content) = fs::read_to_string(&path) {
+                    if parse_curl_command(&content).is_ok() {
+                        FileType::Script
+                    } else if json_from_str::<serde_json::Value>(&content).is_ok() {
+                        FileType::Data
+                    } else {
+                        FileType::Unknown
+                    }
+                } else {
+                    FileType::Unknown
                 }
             };
 
@@ -78,17 +94,19 @@ impl ScriptManager {
                 .map(|time| time.duration_since(UNIX_EPOCH).unwrap_or_default().as_millis() as u64)
                 .unwrap_or(0);
 
-            files.push(FileInfo {
+            let file_info = FileInfo {
                 name: file_name,
                 created_at,
                 updated_at,
                 is_folder,
-                path: new_relative_path.clone(),
+                path: relative_path,
                 file_type,
-            });
+            };
+
+            files.push(file_info);
 
             if is_folder {
-                let mut sub_files = self.collect_files_recursive(&path, &new_relative_path)?;
+                let mut sub_files = self.collect_files_recursive(&path, base_path)?;
                 files.append(&mut sub_files);
             }
         }
