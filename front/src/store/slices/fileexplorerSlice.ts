@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TreeItem } from "react-complex-tree";
+import { TreeItem, TreeItemIndex } from "react-complex-tree";
 
 import { FileType } from "@/api/types";
 
@@ -26,6 +26,13 @@ const initialState: FileexplorerState = {
   editingItem: "",
   currentFileId: -1,
 };
+
+const getItemByIndex = (items:TreeItem<ItemData>[], idx: number) => {
+  const index = items.findIndex((treeItem) => { treeItem.data.idx === idx});
+  if (index >= 0) {
+    return items[index];
+  }
+}
 
 const fileexplorerSlice = createSlice({
   name: "fileexplorer",
@@ -89,15 +96,18 @@ const fileexplorerSlice = createSlice({
     addFileToTree(state, action: PayloadAction<{ name: string; path: string; itemType: FileType }>) {
       const { name, path, itemType } = action.payload;
       const newIndex = state.treeData.length;
-      const parentIndex = state.treeData.findIndex((item) => {
-        if (item.data.itemType !== FileType.Folder) return false;
+      let parentIndex: number;
+      if (path === "") {
+        parentIndex = 0;
+      } else {
+        parentIndex = state.treeData.findIndex((item) => {
+          if (item.data.itemType !== FileType.Folder) return false;
 
-        const itemFullPath = item.data.path 
-          ? `${item.data.path}/${item.data.name}`
-          : item.data.name;
+          const itemFullPath = item.data.path ? `${item.data.path}/${item.data.name}` : item.data.name;
 
-        return itemFullPath === path;
-      });
+          return itemFullPath === path;
+        });
+      }
 
       state.treeData.push({
         index: newIndex,
@@ -107,7 +117,20 @@ const fileexplorerSlice = createSlice({
       });
 
       if (parentIndex !== -1 && state.treeData[parentIndex].children) {
-        state.treeData[parentIndex].children.push(newIndex);
+        state.treeData[parentIndex].children!.push(newIndex);
+
+        state.treeData[parentIndex].children!.sort((a:TreeItemIndex, b:TreeItemIndex) => {
+          const itemA = state.treeData[Number(a)];
+          const itemB = state.treeData[Number(b)];
+          
+          // Folders come before files
+          if (itemA.isFolder !== itemB.isFolder) {
+            return itemA.isFolder ? -1 : 1;
+          }
+          
+          // Alphabetical order for items of the same type
+          return itemA.data.name.localeCompare(itemB.data.name);
+        });
       }
     },
   },

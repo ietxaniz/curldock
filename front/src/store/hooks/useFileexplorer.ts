@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "./hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks/hooks";
 import {
   setLoaded,
   setTreeData,
@@ -10,7 +10,7 @@ import {
   ItemData,
   setCurrentFileId,
   addFileToTree,
-} from "../slices/fileexplorerSlice";
+} from "@/store/slices/fileexplorerSlice";
 import { FileType } from "@/api/types";
 
 export const useGetEditingItem = (): string => {

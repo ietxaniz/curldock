@@ -1,6 +1,6 @@
 import { UncontrolledTreeEnvironment, Tree, TreeItem, TreeItemIndex } from "react-complex-tree";
 import "react-complex-tree/lib/style-modern.css";
-import { PlusIcon, FolderPlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, FolderPlusIcon, HomeIcon, TableCellsIcon } from "@heroicons/react/24/solid";
 
 import { useGetExpandedItems, useExpandItem, useCollapseItem, useRenameItem, useAddFileToTree } from "../../store/hooks/useFileexplorer";
 import { useCurlItemSelector } from "@/store/hooks/useCurlItemSelector";
@@ -11,6 +11,7 @@ import ItemTitleRenderer from "./ItemTitleRenderer";
 import { useAddCurlItem } from "../../store/hooks/useCurl";
 import { createScript } from "@/api/endpoints/script";
 import { createFolder } from "@/api/createFolder";
+import { storeDataFile } from "@/api/endpoints/data";
 import { HttpMethod, getPathNameFromFullName } from "@/api/types";
 import { renameScript } from "../../api/renameScript";
 
@@ -43,7 +44,6 @@ const FileExplorer = () => {
   }
 
   const onRenameItem = async (item: TreeItem<ItemData>, newName: string) => {
-    console.log("rename item", item, newName);
 
     // Call the backend API to rename the item
     const result = await renameScript({
@@ -123,17 +123,34 @@ const FileExplorer = () => {
     }
   };
 
+  const handleCreateDataFile = async () => {
+    // TODO: create data file
+  };
+
+  const onHome = () => {
+    setCurrentPath("");
+  };
+
+  // const provider = FileExplorerDataProvider.getInstance();
   const provider = new FileExplorerDataProvider();
   provider.setTreeData(treeData);
+
+  console.log(key, treeData);
 
   return (
     <div className="h-full flex flex-col">
       <div className="toolbar flex items-center border-b border-gray-300">
+        <button onClick={onHome} className="flex items-center space-x-1">
+          <HomeIcon className="m-1 h-5 w-5 text-gray-300 hover:text-gray-500 active:text-gray-300" />
+        </button>
         <button onClick={handleCreateFile} className="flex items-center space-x-1">
-          <PlusIcon className="m-1 h-5 w-5 text-blue-500 hover:text-blue-700 active:text-blue-500" />
+          <PlusIcon className="m-1 h-5 w-5 text-gray-300 hover:text-gray-500 active:text-gray-300" />
+        </button>
+        <button onClick={handleCreateDataFile} className="flex items-center space-x-1">
+          <TableCellsIcon className="m-1 h-5 w-5 text-gray-300 hover:text-gray-500 active:text-gray-300" />
         </button>
         <button onClick={handleCreateFolder} className="flex items-center space-x-1">
-          <FolderPlusIcon className="m-1 h-5 w-5 text-yellow-500 hover:text-yellow-700 active:text-yellow-500" />
+          <FolderPlusIcon className="m-1 h-5 w-5 text-gray-300 hover:text-gray-500 active:text-gray-300" />
         </button>
         <div className="px-2 text-sm text-center">{currentPath}</div>
       </div>

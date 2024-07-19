@@ -2,13 +2,13 @@
 
 // Enum for HTTP methods
 export enum HttpMethod {
-  GET,
-  POST,
-  PUT,
-  DELETE,
-  PATCH,
-  HEAD,
-  OPTIONS
+  GET="GET",
+  POST="POST",
+  PUT="PUT",
+  DELETE="DELETE",
+  PATCH="PATCH",
+  HEAD="HEAD",
+  OPTIONS="OPTIONS"
 }
 
 // Interface for Curl options
@@ -125,6 +125,31 @@ export interface Response<T> {
 export interface ErrorResponse {
   errorType: string;
   errorDetails: string;
+}
+
+export interface StoreData {
+  parameter: string;
+  filename: string;
+  data: string;
+}
+
+export interface CurlCommandResult {
+  request: CurlCommand;
+  responseHeaders: { [key: string]: string }; 
+  statusCode: number; 
+  date: string;
+  body: string;
+  cookies: { [key: string]: string }; 
+  contentType?: string; 
+  redirectCount?: number; 
+  effectiveUrl?: string;
+  timeNamelookup?: number;
+  timeConnect?: number;
+  timeAppconnect?: number;
+  timePretransfer?: number;
+  timeStarttransfer?: number;
+  timeTotal?: number;
+  storeData: StoreData[];
 }
 
 // Utility function to check for errors in the response
