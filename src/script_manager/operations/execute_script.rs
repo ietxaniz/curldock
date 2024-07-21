@@ -1,37 +1,22 @@
 use crate::curl_gateway::models::CurlCommandResult;
 use crate::curl_gateway::operations::{execute_curl_command, parse_curl_command};
-use crate::script_manager::errors::{ErrorKind, ScriptManagerError};
+use crate::debug_err;
 use crate::script_manager::ScriptManager;
+use anyhow::{anyhow, Result};
 use std::fs;
 
 impl ScriptManager {
-    pub fn execute_script(
-        &self,
-        full_path: &str,
-    ) -> Result<CurlCommandResult, ScriptManagerError> {
+    pub fn execute_script(&self, full_path: &str) -> Result<CurlCommandResult> {
         let full_path = self.get_full_path(full_path)?;
 
         if !full_path.exists() {
-            return Err(ScriptManagerError::new(
-                ErrorKind::ScriptNotFound,
-                "execute_script",
-                format!("Script not found at path: {}", full_path.display()),
-            ));
+            return Err(anyhow!("Script not found at path: {}", full_path.display()));
         }
 
-        let content = fs::read_to_string(&full_path).map_err(|e| {
-            ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "execute_script",
-                "Failed to read script file",
-                Box::new(e),
-            )
-        })?;
+        let content = debug_err!(fs::read_to_string(&full_path), "Failed to read script file")?;
 
-        let curl_command = parse_curl_command(&content)
-            .map_err(|e| ScriptManagerError::from_curl_gateway_error("parse_curl_command", e))?;
+        let curl_command = debug_err!(parse_curl_command(&content))?;
 
-        execute_curl_command(curl_command)
-            .map_err(|e| ScriptManagerError::from_curl_gateway_error("execute_curl_command", e))
+        debug_err!(execute_curl_command(curl_command))
     }
 }

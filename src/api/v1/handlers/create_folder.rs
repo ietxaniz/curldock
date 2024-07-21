@@ -1,5 +1,7 @@
+use crate::debug_err;
+use anyhow::anyhow;
 use crate::api::common::models::Response;
-use crate::api::common::{ApiError,ErrorKind};
+use crate::api::common::ApiError;
 use crate::script_manager;
 use actix_web::{web, HttpResponse, ResponseError};
 use serde::Deserialize;
@@ -13,12 +15,10 @@ pub async fn create_folder(body: web::Bytes) -> HttpResponse {
     let folder_request: CreateFolderRequest = match serde_json::from_slice(&body) {
         Ok(request) => request,
         Err(e) => {
-            return ApiError::new(
-                ErrorKind::InvalidInput,
+            return ApiError::new_error(
                 "create_folder",
-                format!("Failed to parse JSON: {}", e),
-            )
-            .error_response()
+                debug_err!(Err(anyhow!("Failed to parse JSON: {}", e)))
+            ).error_response()
         }
     };
 
@@ -26,6 +26,6 @@ pub async fn create_folder(body: web::Bytes) -> HttpResponse {
 
     match script_manager.create_folder(&folder_request.path) {
         Ok(_) => HttpResponse::Ok().json(Response::success("Folder created successfully")),
-        Err(e) => ApiError::from_script_manager_error("create_folder", e).error_response(),
+        Err(e) => ApiError::from_debug_error("create_folder", e).error_response(),
     }
 }

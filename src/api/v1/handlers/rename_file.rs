@@ -1,5 +1,5 @@
 use crate::api::common::models::Response;
-use crate::api::common::{ApiError, ErrorKind};
+use crate::api::common::ApiError;
 use crate::script_manager;
 use actix_web::{web, HttpResponse, ResponseError};
 use serde::Deserialize;
@@ -17,7 +17,6 @@ pub async fn rename_file(body: web::Bytes) -> HttpResponse {
         Ok(request) => request,
         Err(e) => {
             return ApiError::new(
-                ErrorKind::InvalidInput,
                 "create_folder",
                 format!("Failed to parse JSON: {}", e),
             )
@@ -28,6 +27,6 @@ pub async fn rename_file(body: web::Bytes) -> HttpResponse {
 
     match script_manager.rename_file(&request.old_path, &request.new_path) {
         Ok(_) => HttpResponse::Ok().json(Response::success("File renamed successfully")),
-        Err(e) => ApiError::from_script_manager_error("rename_file", e).error_response(),
+        Err(e) => ApiError::from_debug_error("rename_file", e).error_response(),
     }
 }

@@ -1,4 +1,5 @@
-use crate::curl_gateway::errors::{CurlGatewayError, ErrorKind};
+use crate::debug_err;
+use anyhow::{Result, anyhow};
 use crate::curl_gateway::models::{CurlCommand, CurlCommandResult, StoreData};
 use crate::curl_gateway::utils::extract_data;
 use regex::Regex;
@@ -8,7 +9,7 @@ pub fn generate_curl_command_result(
     command: CurlCommand,
     stdout: &str,
     stderr: &str,
-) -> Result<CurlCommandResult, CurlGatewayError> {
+) -> Result<CurlCommandResult> {
     let mut response_headers = HashMap::new();
     let mut cookies = HashMap::new();
     let mut status_code = 0;
@@ -44,22 +45,8 @@ pub fn generate_curl_command_result(
     }
 
     // Parse status code, headers, and other info from stderr
-    let status_regex = Regex::new(r"< HTTP/\d+\.\d+\s+(\d+)").map_err(|e| {
-        CurlGatewayError::with_source(
-            ErrorKind::Parsing,
-            "generate_curl_command_result",
-            "Failed to create status regex",
-            Box::new(e)
-        )
-    })?;
-    let header_regex = Regex::new(r"< ([^:]+):\s*(.+)").map_err(|e| {
-        CurlGatewayError::with_source(
-            ErrorKind::Parsing,
-            "generate_curl_command_result",
-            "Failed to create header regex",
-            Box::new(e)
-        )
-    })?;
+    let status_regex = debug_err!(Regex::new(r"< HTTP/\d+\.\d+\s+(\d+)"))?;
+    let header_regex = debug_err!(Regex::new(r"< ([^:]+):\s*(.+)"))?;
 
     for line in stderr.lines() {
         if let Some(cap) = status_regex.captures(line) {
@@ -85,23 +72,12 @@ pub fn generate_curl_command_result(
     let mut store_data = Vec::new();
 
     for store_curl in &command.store_curl_body {
-        match extract_data(&body, &store_curl.source) {
-            Ok(extracted_data) => {
-                store_data.push(StoreData {
-                    parameter: store_curl.destination.clone(),
-                    filename: store_curl.filename.clone(),
-                    data: extracted_data,
-                });
-            }
-            Err(e) => {
-                return Err(CurlGatewayError::with_source(
-                    ErrorKind::DataHandling,
-                    "generate_curl_command_result",
-                    format!("Failed to extract data from {}", store_curl.source),
-                    Box::new(e)
-                ));
-            }
-        }
+        store_data.push(StoreData {
+            parameter: store_curl.destination.clone(),
+            filename: store_curl.filename.clone(),
+            data: debug_err!(extract_data(&body, &store_curl.source), "Failed to extract data from {}", store_curl.source)?,
+        });
+
     }
 
     for store_cookie in &command.store_curl_cookie {
@@ -112,11 +88,7 @@ pub fn generate_curl_command_result(
                 data: cookie_value.clone(),
             });
         } else {
-            return Err(CurlGatewayError::new(
-                ErrorKind::DataHandling,
-                "generate_curl_command_result",
-                format!("Cookie '{}' not found", store_cookie.source)
-            ));
+            return  Err(anyhow!("Cookie '{}' not found", store_cookie.source));
         }
     }
 

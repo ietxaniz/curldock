@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
-use actix_web::{web, HttpResponse};
-use crate::api::common::{ApiError, ErrorKind};
+use actix_web::{web, HttpResponse, ResponseError};
+use crate::api::common::ApiError;
 use serde::de::DeserializeOwned;
 
 #[derive(Serialize, Deserialize)]
@@ -43,11 +43,10 @@ pub struct PathQuery {
 
 pub fn decode_query<T: DeserializeOwned>(path: &str) -> Result<web::Query<T>, HttpResponse> {
   let query_str = path.split('?').nth(1).unwrap_or("");
-  web::Query::<T>::from_query(query_str).map_err(|_| {
-      HttpResponse::BadRequest().json(ApiError::new(
-          ErrorKind::InvalidInput,
-          "decode_query",
-          "Invalid query parameters".to_string(),
-      ))
+  web::Query::<T>::from_query(query_str).map_err(|e| {
+    ApiError::new(
+        "decode_query",
+        format!("Invalid query parameters: {}", e)
+    ).error_response()
   })
 }

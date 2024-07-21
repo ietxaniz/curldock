@@ -1,5 +1,5 @@
 use crate::api::common::models::Response;
-use crate::api::common::{ApiError, ErrorKind};
+use crate::api::common::ApiError;
 use crate::script_manager;
 use actix_web::{web, HttpResponse, ResponseError};
 use serde::{Deserialize, Serialize};
@@ -19,7 +19,6 @@ pub async fn store_data_file(body: web::Bytes) -> HttpResponse {
         Ok(details) => details,
         Err(e) => {
             return ApiError::new(
-                ErrorKind::InvalidInput,
                 "store_data_file",
                 format!("Failed to parse JSON: {}", e),
             )
@@ -35,7 +34,7 @@ pub async fn store_data_file(body: web::Bytes) -> HttpResponse {
     ) {
         Ok(created_data_file) => HttpResponse::Created().json(Response::success(created_data_file)),
         Err(e) => {
-            ApiError::from_script_manager_error("store_data_file", e).error_response()
+            ApiError::from_debug_error("store_data_file", e).error_response()
         }
     }
 }

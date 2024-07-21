@@ -12,7 +12,7 @@ pub async fn execute_script(path:&str) -> HttpResponse {
                 Ok(execution_result) => {
                     HttpResponse::Ok().json(Response::success(execution_result))
                 }
-                Err(e) => ApiError::from_script_manager_error("execute_script", e).error_response(),
+                Err(e) => ApiError::from_debug_error("execute_script", e).error_response(),
             }
         }
         Err(e) => e,

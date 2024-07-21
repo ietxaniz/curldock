@@ -1,5 +1,6 @@
+use crate::debug_err;
+use anyhow::{Result, anyhow};
 use crate::curl_gateway::operations::generate_curl_command;
-use crate::script_manager::errors::{ScriptManagerError, ErrorKind};
 use crate::script_manager::models::{ScriptDetails, ScriptDetailsCreate};
 use crate::script_manager::ScriptManager;
 use std::fs;
@@ -11,7 +12,7 @@ impl ScriptManager {
     pub fn create_script(
         self: &Arc<Self>,
         script_details: ScriptDetailsCreate,
-    ) -> Result<ScriptDetails, ScriptManagerError> {
+    ) -> Result<ScriptDetails> {
         let _lock = self.lock();
 
 
@@ -20,40 +21,18 @@ impl ScriptManager {
         println!("Creating script at: {:?}", full_path);
 
         if full_path.exists() {
-            return Err(ScriptManagerError::new(
-                ErrorKind::Io,
-                "create_script",
-                "Script already exists",
-            ));
+            return Err(anyhow!("Script already exists"));
         }
 
-        let curl_command_str = generate_curl_command(&script_details.curl_command)
-            .map_err(|e| ScriptManagerError::from_curl_gateway_error("generate_curl_command", e))?;
+        let curl_command_str = debug_err!(generate_curl_command(&script_details.curl_command))?;
 
         println!("Generated curl command: {}", curl_command_str);
 
-        let mut file = fs::File::create(&full_path)
-            .map_err(|e| ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "create_script",
-                "Failed to create script file",
-                Box::new(e),
-            ))?;
-        file.write_all(curl_command_str.as_bytes())
-            .map_err(|e| ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "create_script",
-                "Failed to write to script file",
-                Box::new(e),
-            ))?;
+        let mut file = debug_err!(fs::File::create(&full_path), "Failed to create script file {}", script_details.full_name)?;
 
-        let metadata = fs::metadata(&full_path)
-            .map_err(|e| ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "create_script",
-                "Failed to read metadata",
-                Box::new(e),
-            ))?;
+        debug_err!(file.write_all(curl_command_str.as_bytes()),"Failed to write to script file")?;
+
+        let metadata = debug_err!(fs::metadata(&full_path), "Failed to read metadata")?;
 
         Ok(ScriptDetails {
             full_name: script_details.full_name,

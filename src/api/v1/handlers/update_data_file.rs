@@ -1,5 +1,5 @@
 use crate::api::common::models::Response;
-use crate::api::common::{ApiError, ErrorKind};
+use crate::api::common::ApiError;
 use crate::script_manager;
 use actix_web::{web, HttpResponse, ResponseError};
 use serde::Deserialize;
@@ -16,7 +16,6 @@ pub async fn update_data_file(body: web::Bytes) -> HttpResponse {
         Ok(request) => request,
         Err(e) => {
             return ApiError::new(
-                ErrorKind::InvalidInput,
                 "update_data_file",
                 format!("Failed to parse JSON: {}", e),
             )
@@ -28,6 +27,6 @@ pub async fn update_data_file(body: web::Bytes) -> HttpResponse {
 
     match script_manager.update_data_file(&update_request.path, &update_request.content) {
         Ok(updated_file) => HttpResponse::Ok().json(Response::success(updated_file)),
-        Err(e) => ApiError::from_script_manager_error("update_data_file", e).error_response(),
+        Err(e) => ApiError::from_debug_error("update_data_file", e).error_response(),
     }
 }

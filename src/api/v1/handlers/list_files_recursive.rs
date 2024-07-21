@@ -8,6 +8,6 @@ pub async fn list_files_recursive() -> HttpResponse {
 
     match script_manager.list_files_recursive() {
         Ok(file_list) => HttpResponse::Ok().json(Response::success(file_list)),
-        Err(e) => ApiError::from_script_manager_error("list_files_recursive", e).error_response(),
+        Err(e) => ApiError::from_debug_error("list_files_recursive", e).error_response(),
     }
 }

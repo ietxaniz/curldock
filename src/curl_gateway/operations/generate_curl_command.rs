@@ -1,7 +1,7 @@
-use crate::curl_gateway::errors::{CurlGatewayError, ErrorKind};
+use anyhow::{Result, anyhow};
 use crate::curl_gateway::models::{CurlCommand, HttpMethod};
 
-pub fn generate_curl_command(command: &CurlCommand) -> Result<String, CurlGatewayError> {
+pub fn generate_curl_command(command: &CurlCommand) -> Result<String> {
     let mut parts = vec!["#!/bin/sh".to_string(), "curl".to_string()];
 
     // Boolean options
@@ -87,11 +87,7 @@ pub fn generate_curl_command(command: &CurlCommand) -> Result<String, CurlGatewa
 
     // URL (should be last)
     if command.url.is_empty() {
-        return Err(CurlGatewayError::new(
-            ErrorKind::InvalidInput,
-            "generate_curl_command",
-            "URL is empty"
-        ));
+        return Err(anyhow!("URL is empty"));
     }
     parts.push(command.url.clone());
 

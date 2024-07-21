@@ -1,5 +1,5 @@
 use crate::api::common::models::Response;
-use crate::api::common::{ApiError, ErrorKind};
+use crate::api::common::ApiError;
 use crate::script_manager;
 use actix_web::{web, HttpResponse, ResponseError};
 use serde::Deserialize;
@@ -17,7 +17,6 @@ pub async fn rename_script(body: web::Bytes) -> HttpResponse {
         Ok(request) => request,
         Err(e) => {
             return ApiError::new(
-                ErrorKind::InvalidInput,
                 "rename_script",
                 format!("Failed to parse JSON: {}", e),
             )
@@ -32,6 +31,6 @@ pub async fn rename_script(body: web::Bytes) -> HttpResponse {
         &rename_request.new_full_name,
     ) {
         Ok(_) => HttpResponse::Ok().json(Response::success("Script renamed successfully")),
-        Err(e) => ApiError::from_script_manager_error("rename_script", e).error_response(),
+        Err(e) => ApiError::from_debug_error("rename_script", e).error_response(),
     }
 }

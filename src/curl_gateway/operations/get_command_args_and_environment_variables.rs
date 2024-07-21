@@ -1,18 +1,19 @@
-use crate::curl_gateway::errors::{CurlGatewayError, ErrorKind};
 use crate::curl_gateway::models::{CurlCommand, HttpMethod};
+use crate::debug_err;
+use anyhow::{Result, anyhow};
+use serde_json::Value;
 use std::collections::HashMap;
 use std::fs;
-use serde_json::Value;
 
 pub fn get_command_args_and_environment_variables(
-    command: &CurlCommand
-) -> Result<(Vec<String>, HashMap<String, String>), CurlGatewayError> {
+    command: &CurlCommand,
+) -> Result<(Vec<String>, HashMap<String, String>)> {
     let mut args = Vec::new();
     let mut env_vars = HashMap::new();
 
     // Extract curl arguments
-    args.push("-v".to_string());  // Always include verbose mode
-    
+    args.push("-v".to_string()); // Always include verbose mode
+
     // Always include timing information
     args.push("--write-out".to_string());
     args.push("'\\nNamelookup: %{time_namelookup}\\nConnect: %{time_connect}\\nAppconnect: %{time_appconnect}\\nPretransfer: %{time_pretransfer}\\nStarttransfer: %{time_starttransfer}\\nTotal: %{time_total}'".to_string());
@@ -122,36 +123,27 @@ pub fn get_command_args_and_environment_variables(
 
     // Process loaddata instructions
     for load in &command.load_curl {
-        let file_content = fs::read_to_string(&load.filename).map_err(|e| {
-            CurlGatewayError::with_source(
-                ErrorKind::DataHandling,
-                "get_command_args_and_environment_variables",
-                format!("Failed to load data from {}", load.filename),
-                Box::new(e)
-            )
-        })?;
+        let file_content = debug_err!(
+            fs::read_to_string(&load.filename),
+            "Failed to load data from {}", load.filename
+        )?;
 
-        let json: Value = serde_json::from_str(&file_content).map_err(|e| {
-            CurlGatewayError::with_source(
-                ErrorKind::DataHandling,
-                "get_command_args_and_environment_variables",
-                format!("Failed to parse JSON from {}", load.filename),
-                Box::new(e)
-            )
-        })?;
+        let json: Value = debug_err!(
+            serde_json::from_str(&file_content),
+            "Failed to parse JSON from {}", load.filename
+        )?;
+        
 
         if let Some(value) = json.get(&load.data_name) {
-            let env_value = value.as_str().map(|s| s.to_string())
-                                .or_else(|| value.as_u64().map(|n| n.to_string()))
-                                .or_else(|| value.as_f64().map(|n| n.to_string()))
-                                .unwrap_or_else(|| value.to_string());
+            let env_value = value
+                .as_str()
+                .map(|s| s.to_string())
+                .or_else(|| value.as_u64().map(|n| n.to_string()))
+                .or_else(|| value.as_f64().map(|n| n.to_string()))
+                .unwrap_or_else(|| value.to_string());
             env_vars.insert(load.env_variable.clone(), env_value);
         } else {
-            return Err(CurlGatewayError::new(
-                ErrorKind::DataHandling,
-                "get_command_args_and_environment_variables",
-                format!("Key '{}' not found in {}", load.data_name, load.filename)
-            ));
+            return Err(anyhow!("Key '{}' not found in {}", load.data_name, load.filename));
         }
     }
 

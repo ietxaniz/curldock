@@ -12,7 +12,7 @@ pub async fn load_data_file(path: &str) -> HttpResponse {
                 Ok(execution_result) => {
                     HttpResponse::Ok().json(Response::success(execution_result))
                 }
-                Err(e) => ApiError::from_script_manager_error("load_data_file", e).error_response(),
+                Err(e) => ApiError::from_debug_error("load_data_file", e).error_response(),
             }
         }
         Err(e) => e,

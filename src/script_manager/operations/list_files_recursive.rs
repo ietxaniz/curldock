@@ -1,4 +1,5 @@
-use crate::script_manager::errors::{ScriptManagerError, ErrorKind};
+use crate::debug_err;
+use anyhow::{anyhow, Result};
 use crate::script_manager::models::{FileInfo, FileList, FileType};
 use crate::script_manager::ScriptManager;
 use std::fs;
@@ -9,9 +10,9 @@ use crate::curl_gateway::operations::parse_curl_command;
 use serde_json::from_str as json_from_str;
 
 impl ScriptManager {
-    pub fn list_files_recursive(self: &Arc<Self>) -> Result<FileList, ScriptManagerError> {
+    pub fn list_files_recursive(self: &Arc<Self>) -> Result<FileList> {
         let base_path = self.scripts_dir();
-        let files = self.collect_files_recursive(&base_path, &base_path)?;
+        let files = debug_err!(self.collect_files_recursive(&base_path, &base_path))?;
 
         Ok(FileList {
             path: "".to_string(),
@@ -23,22 +24,11 @@ impl ScriptManager {
         &self,
         dir: &Path,
         base_path: &Path,
-    ) -> Result<Vec<FileInfo>, ScriptManagerError> {
+    ) -> Result<Vec<FileInfo>> {
         let mut files = Vec::new();
-        let mut entries: Vec<_> = fs::read_dir(dir)
-            .map_err(|e| ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "collect_files_recursive",
-                "Failed to read directory",
-                Box::new(e),
-            ))?
+        let mut entries: Vec<_> = debug_err!(fs::read_dir(dir), "Failed to read directory")?
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "collect_files_recursive",
-                "Failed to collect directory entries",
-                Box::new(e),
-            ))?;
+            .map_err(|e| anyhow!("Failed to collect directory entries: {}", e))?;
 
         // Sort entries: directories first, then files
         entries.sort_by(|a, b| {
@@ -50,22 +40,11 @@ impl ScriptManager {
 
         for entry in entries {
             let path = entry.path();
-            let metadata = fs::metadata(&path).map_err(|e| ScriptManagerError::with_source(
-                ErrorKind::Io,
-                "collect_files_recursive",
-                "Failed to read metadata",
-                Box::new(e),
-            ))?;
+            let metadata = debug_err!(fs::metadata(&path), "Failed to read metadata")?;
             let is_folder = metadata.is_dir();
             let file_name = path.file_name().unwrap().to_string_lossy().into_owned();
 
-            let relative_path = path.strip_prefix(base_path)
-                .map_err(|e| ScriptManagerError::with_source(
-                    ErrorKind::Internal,
-                    "collect_files_recursive",
-                    "Failed to strip base path",
-                    Box::new(e),
-                ))?
+            let relative_path = debug_err!(path.strip_prefix(base_path), "Failed to strip base path")?
                 .to_string_lossy()
                 .into_owned();
 

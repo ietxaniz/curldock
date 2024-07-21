@@ -7,10 +7,11 @@ pub async fn update_script(body: web::Bytes) -> HttpResponse {
     let script_details: ScriptDetailsCreate = match serde_json::from_slice(&body) {
         Ok(data) => data,
         Err(e) => {
-            return HttpResponse::BadRequest().json(Response::<()>::error(
-                "InvalidJSON".to_string(),
+            return ApiError::new(
+                "update_data_file",
                 format!("Failed to parse JSON: {}", e),
-            ))
+            )
+            .error_response()
         }
     };
 
@@ -18,8 +19,6 @@ pub async fn update_script(body: web::Bytes) -> HttpResponse {
 
     match script_manager.update_script(script_details) {
         Ok(updated_script) => HttpResponse::Ok().json(Response::success(updated_script)),
-        Err(err) => {
-            return ApiError::from_script_manager_error("update_script", err).error_response()
-        }
+        Err(err) => ApiError::from_debug_error("update_script", err).error_response()
     }
 }
