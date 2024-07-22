@@ -18,40 +18,14 @@ export const useLoadData = () => {
         const listAllFilesResponse = await listAllFiles();
         console.log(listAllFilesResponse);
         const serverData = listAllFilesResponse.files;
-        const folders: { [key: string]: number } = {};
-        folders[""] = 0;
-        const initialData = [
-          {
-            index: "root" as TreeItemIndex,
-            isFolder: true,
-            children: [] as number[],
-            data: { name: "Root", editing: false, idx: 0, path: "", itemType: FileType.Data },
-          },
-        ];
-        for (let i = 0; i < serverData.length; i++) {
-          const idx = i + 1;
-          const { path } = getPathNameFromFullName(serverData[i].path);
-          const parentidx = folders[path];
-          initialData[parentidx].children.push(idx);
-          if (serverData[i].isFolder) {
-            const fullPath = serverData[i].path;
-            initialData.push({
-              index: idx,
-              children: [] as number[],
-              isFolder: true,
-              data: { name: serverData[i].name, editing: false, idx: idx, path, itemType: serverData[i].fileType },
-            });
-            folders[fullPath] = idx;
-          } else {
-            initialData.push({
-              index: idx,
-              children: [] as number[],
-              isFolder: false,
-              data: { name: serverData[i].name, editing: false, idx: idx, path, itemType: serverData[i].fileType },
-            });
+        setTreeData(serverData.map((info)=>{
+          return {
+            name: info.name,
+            path: info.path,
+            editing: false,
+            itemType: info.fileType,
           }
-        }
-        setTreeData(initialData);
+        }));
         setLoaded(true);
       }
     };

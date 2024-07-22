@@ -23,7 +23,7 @@ const ItemTitleRenderer = ({ item, id, provider }: { item: TreeItem<ItemData>; i
 
   useEffect(() => {
     const getData = async () => {
-      const treeItem = await provider.getTreeItem(item.data.idx);
+      const treeItem = await provider.getTreeItem(item.index);
       const newName = treeItem.data.name;
       if (name !== newName) {
         setName(newName);

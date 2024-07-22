@@ -2,7 +2,7 @@ import { UncontrolledTreeEnvironment, Tree, TreeItem, TreeItemIndex } from "reac
 import "react-complex-tree/lib/style-modern.css";
 import { PlusIcon, FolderPlusIcon, HomeIcon, TableCellsIcon } from "@heroicons/react/24/solid";
 
-import { useGetExpandedItems, useExpandItem, useCollapseItem, useRenameItem, useAddFileToTree } from "../../store/hooks/useFileexplorer";
+import { useGetExpandedItems, useExpandItem, useCollapseItem, useRenameItem, useAddItemToTree } from "../../store/hooks/useFileexplorer";
 import { useCurlItemSelector } from "@/store/hooks/useCurlItemSelector";
 
 import { ItemData } from "../../store/slices/fileexplorerSlice";
@@ -25,7 +25,7 @@ const FileExplorer = () => {
   const collapseItem = useCollapseItem();
   const renameItem = useRenameItem();
   const addCurlItem = useAddCurlItem();
-  const addFileToTree = useAddFileToTree();
+  const addItemToTree = useAddItemToTree();
   const [currentPath, setCurrentPath] = useState("");
   const selectCurlItem = useCurlItemSelector();
 
@@ -54,7 +54,7 @@ const FileExplorer = () => {
     });
 
     if (result) {
-      renameItem(item, newName);
+      renameItem(item.data.path, item.data.name, newName);
       if (item.isFolder) {
       }
     } else {
@@ -77,7 +77,7 @@ const FileExplorer = () => {
     }
 
     for (const index of itemIndexes) {
-      const item = treeData.find((item) => item.index === index);
+      const item = treeData[index];
       if (item) {
         await onClickItem(item, treeId);
       }
@@ -106,7 +106,7 @@ const FileExplorer = () => {
       });
       if (result) {
         const { path, name } = getPathNameFromFullName(result.fullName);
-        addFileToTree(name, path, FileType.Script);
+        addItemToTree(name, path, FileType.Script);
         // TODO: We will add curl item later. addCurlItem({ fileId: treeData.length, script: result.curlCommand }, treeData.length);
       }
     }
@@ -118,7 +118,7 @@ const FileExplorer = () => {
       const path = currentPath + (currentPath ? "/" : "") + name;
       const result = await createFolder({ path });
       if (result) {
-        addFileToTree(name, currentPath, FileType.Folder);
+        addItemToTree(name, currentPath, FileType.Folder);
       }
     }
   };
@@ -168,7 +168,7 @@ const FileExplorer = () => {
             return <ItemTitleRenderer item={props.item} id={key} provider={provider} />;
           }}
         >
-          <Tree treeId="tree-1" rootItem="root" treeLabel="File Explorer" />
+          <Tree treeId="tree-1" rootItem="" treeLabel="File Explorer" />
         </UncontrolledTreeEnvironment>
       </div>
     </div>

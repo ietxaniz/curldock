@@ -1,3 +1,5 @@
+import { log } from "console";
+
 export interface Response<T> {
   data?: T;
   error?: {
@@ -8,9 +10,11 @@ export interface Response<T> {
 
 export const checkError = <T>(response: Response<T>): T => {
   if (response.error) {
+    console.log(response);
     throw new Error(`${response.error.errorType}: ${response.error.errorDetails}`);
   }
   if (!response.data) {
+    console.log(response);
     throw new Error("No data available");
   }
   return response.data;

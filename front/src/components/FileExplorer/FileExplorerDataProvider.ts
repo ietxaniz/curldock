@@ -1,5 +1,5 @@
 import { TreeDataProvider, TreeItem, TreeItemIndex, Disposable } from "react-complex-tree";
-import { ItemData } from "../../store/slices/fileexplorerSlice";
+import { ItemData, TreeMap } from "../../store/slices/fileexplorerSlice";
 
 export class FileExplorerDataProvider implements TreeDataProvider<ItemData> {
   static _instance: FileExplorerDataProvider | null = null;
@@ -11,16 +11,12 @@ export class FileExplorerDataProvider implements TreeDataProvider<ItemData> {
     return this._instance;
   }
 
-  private _treeData: Record<TreeItemIndex, TreeItem<ItemData>> = {};
+  private _treeData: TreeMap = {};
   private _changeListeners: ((changedItemIds: TreeItemIndex[]) => void)[] = [];
   private _rootItem: TreeItemIndex = 'root';
 
-  public setTreeData(newTreeData: TreeItem<ItemData>[]) {
-    this._treeData = newTreeData.reduce((acc, item) => {
-      acc[item.index] = item;
-      return acc;
-    }, {} as Record<TreeItemIndex, TreeItem<ItemData>>);
-
+  public setTreeData(newTreeData: TreeMap) {
+    this._treeData = newTreeData;
     // Notify about all items
     const allItemIds = Object.keys(this._treeData);
     allItemIds.push('0');

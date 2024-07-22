@@ -6,12 +6,13 @@ import {
   collapseItem,
   renameItem,
   setEditingItem,
-  TreeItem,
-  ItemData,
   setCurrentFileId,
-  addFileToTree,
+  addItemToTree,
+  deleteItemFromTree,
+  ItemData,
 } from "@/store/slices/fileexplorerSlice";
 import { FileType } from "@/api/types";
+import { TreeItem } from "react-complex-tree";
 
 export const useGetEditingItem = (): string => {
   return useAppSelector((state) => state.fileexplorer.editingItem);
@@ -38,9 +39,9 @@ export const useGetTreeData = () => {
   return useAppSelector((state) => state.fileexplorer.treeData);
 };
 
-export const useSetTreeData = (): ((treeData: TreeItem<ItemData>[]) => void) => {
+export const useSetTreeData = (): ((treeData: ItemData[]) => void) => {
   const dispatch = useAppDispatch();
-  const setTreeDataDispatch = (treeData: TreeItem<ItemData>[]) => {
+  const setTreeDataDispatch = (treeData: ItemData[]) => {
     dispatch(setTreeData(treeData));
   };
   return setTreeDataDispatch;
@@ -66,10 +67,10 @@ export const useCollapseItem = (): ((itemId: string) => void) => {
   return collapseItemDispatch;
 };
 
-export const useRenameItem = (): ((item: TreeItem<ItemData>, newName: string) => void) => {
+export const useRenameItem = (): ((path: string, oldName: string, newName: string) => void) => {
   const dispatch = useAppDispatch();
-  const renameItemDispatch = (item: TreeItem<ItemData>, newName: string) => {
-    dispatch(renameItem({ item, newName }));
+  const renameItemDispatch = (path: string, oldName: string, newName: string) => {
+    dispatch(renameItem({ path, oldName, newName }));
   };
   return renameItemDispatch;
 };
@@ -81,9 +82,16 @@ export const useSetCurrentFileId = () => {
   return (id: number) => dispatch(setCurrentFileId(id));
 };
 
-export const useAddFileToTree = (): ((name: string, path: string, itemType: FileType) => void) => {
+export const useAddItemToTree = (): ((name: string, path: string, itemType: FileType) => void) => {
   const dispatch = useAppDispatch();
   return (name: string, path: string, itemType: FileType) => {
-    dispatch(addFileToTree({ name, path, itemType }));
+    dispatch(addItemToTree({ name, path, itemType }));
+  };
+};
+
+export const useDeleteItemFromTree = (): ((key: string) => void) => {
+  const dispatch = useAppDispatch();
+  return (key: string) => {
+    dispatch(deleteItemFromTree({ key }));
   };
 };
